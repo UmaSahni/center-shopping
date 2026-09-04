@@ -35,10 +35,26 @@ export const PRODUCT_IMAGE_MAP = {
 };
 
 export function getProductImage(title, defaultUrl) {
+  if (defaultUrl && !defaultUrl.includes('photo-1610375461246')) {
+    return defaultUrl;
+  }
   if (title && PRODUCT_IMAGE_MAP[title]) {
     return PRODUCT_IMAGE_MAP[title];
   }
-  return defaultUrl || 'https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=800&q=80';
+
+  const lower = (title || '').toLowerCase();
+  if (lower.includes('cooker')) return 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('bedsheet') || lower.includes('bedding')) return 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('shoes') || lower.includes('sneakers')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('backpack') || lower.includes('daypack')) return 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('watch') || lower.includes('timepiece')) return 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('earbuds') || lower.includes('neckband')) return 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('bottle') || lower.includes('thermosteel')) return 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('kurta') || lower.includes('sherwani')) return 'https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('serum')) return 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80';
+  if (lower.includes('kettle')) return 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80';
+
+  return defaultUrl || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=800&q=80';
 }
 
 export function getStatusBadge(status) {
