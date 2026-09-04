@@ -11,13 +11,16 @@ function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParam = searchParams.get('q') || '';
-  const catParam = searchParams.get('category') || searchParams.get('cat') || 'all';
+  const parseCatParam = (param) => {
+    if (!param || param === 'all') return [];
+    return param.split(',').map((c) => c.trim()).filter(Boolean);
+  };
 
   // Local search input with Debouncing
   const [searchInput, setSearchInput] = useState(queryParam);
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  const [selectedCategory, setSelectedCategory] = useState(catParam);
+  const [selectedCategories, setSelectedCategories] = useState(() => parseCatParam(catParam));
   const [sortBy, setSortBy] = useState('curated');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [minPrice, setMinPrice] = useState('');
@@ -31,10 +34,30 @@ function SearchResultsContent() {
   }, [queryParam]);
 
   useEffect(() => {
-    if (catParam) {
-      setSelectedCategory(catParam);
-    }
+    setSelectedCategories(parseCatParam(catParam));
   }, [catParam]);
+
+  const toggleCategory = (cat) => {
+    setPage(1);
+    setSelectedCategories((prev) => {
+      const next = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
+      if (next.length > 0) params.set('category', next.join(','));
+      const qs = params.toString();
+      router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
+      return next;
+    });
+  };
+
+  const toggleAllCategories = () => {
+    setPage(1);
+    setSelectedCategories([]);
+    const params = new URLSearchParams();
+    if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
+    const qs = params.toString();
+    router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
+  };
 
   // When debounced search term changes, update URL smoothly
   useEffect(() => {
@@ -42,16 +65,16 @@ function SearchResultsContent() {
       setPage(1);
       const params = new URLSearchParams();
       if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
-      if (selectedCategory && selectedCategory !== 'all') params.set('category', selectedCategory);
+      if (selectedCategories.length > 0) params.set('category', selectedCategories.join(','));
       const qs = params.toString();
       router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
     }
-  }, [debouncedSearch, queryParam, selectedCategory, router]);
+  }, [debouncedSearch, queryParam, selectedCategories, router]);
 
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedCategory, sortBy, inStockOnly, minPrice, maxPrice]);
+  }, [selectedCategories, sortBy, inStockOnly, minPrice, maxPrice]);
 
   // Categories query
   const { data: categoriesData } = useGetCategoriesQuery();
@@ -60,7 +83,7 @@ function SearchResultsContent() {
   // Products query with pagination and filters
   const { data: productsData, isLoading, isFetching } = useGetProductsQuery({
     search: debouncedSearch.trim() || undefined,
-    category: selectedCategory !== 'all' ? selectedCategory : undefined,
+    category: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
     inStockOnly: inStockOnly || undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
@@ -143,10 +166,10 @@ function SearchResultsContent() {
                 <span className="material-symbols-outlined text-[18px]">filter_list</span>
                 Refine Search
               </h3>
-              {(selectedCategory !== 'all' || inStockOnly || minPrice || maxPrice || sortBy !== 'curated') && (
+              {(selectedCategories.length > 0 || inStockOnly || minPrice || maxPrice || sortBy !== 'curated') && (
                 <button
                   onClick={() => {
-                    setSelectedCategory('all');
+                    setSelectedCategories([]);
                     setInStockOnly(false);
                     setMinPrice('');
                     setMaxPrice('');
@@ -159,21 +182,77 @@ function SearchResultsContent() {
               )}
             </div>
 
-            {/* Category Filter */}
+            {/* Category Multiselect Checkboxes Filter */}
             <div>
-              <label className="block font-montserrat text-[11px] font-bold text-[#14213D] uppercase tracking-wider mb-2.5">
-                Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:border-[#14213D]"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((cat, idx) => (
-                  <option key={idx} value={cat}>{cat}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="block font-montserrat text-[11px] font-bold text-[#14213D] uppercase tracking-wider">
+                  Category
+                </label>
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={toggleAllCategories}
+                    className="text-[10px] text-amber-600 hover:text-amber-700 font-bold uppercase"
+                  >
+                    Clear ({selectedCategories.length})
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                {/* All Categories checkbox option */}
+                <label
+                  onClick={toggleAllCategories}
+                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all text-xs select-none border ${
+                    selectedCategories.length === 0
+                      ? 'bg-amber-500/10 border-amber-500/40 text-slate-900 font-bold shadow-xs'
+                      : 'bg-slate-50 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.length === 0}
+                      onChange={toggleAllCategories}
+                      className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                    />
+                    <span>All Categories</span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-400 font-mono">
+                    1050+
+                  </span>
+                </label>
+
+                {/* Individual Categories checkboxes */}
+                {categories.map((cat, idx) => {
+                  const isChecked = selectedCategories.includes(cat);
+                  return (
+                    <label
+                      key={idx}
+                      onClick={() => toggleCategory(cat)}
+                      className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all text-xs select-none border ${
+                        isChecked
+                          ? 'bg-amber-500/10 border-amber-500 text-slate-950 font-bold shadow-xs'
+                          : 'bg-slate-50 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCategory(cat)}
+                          className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                        />
+                        <span>{cat}</span>
+                      </div>
+                      {isChecked ? (
+                        <span className="material-symbols-outlined text-[16px] text-amber-600">check_circle</span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 font-mono">175</span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Stock Availability */}
@@ -219,29 +298,61 @@ function SearchResultsContent() {
           {/* Right Results Grid & Pagination (9 cols) */}
           <div className="lg:col-span-9 flex flex-col gap-6">
             {/* Top Toolbar */}
-            <div className="bg-white p-4 rounded-xl border border-hairline shadow-xs flex flex-wrap items-center justify-between gap-4">
-              <div className="text-xs text-slate-500 font-medium">
-                Showing <strong className="font-bold text-slate-900">{products.length}</strong> of{' '}
-                <strong className="font-bold text-slate-900">{pagination.totalItems || products.length}</strong> authenticated assets
-                {debouncedSearch && (
-                  <span> matching "<strong className="text-slate-900 font-bold">{debouncedSearch}</strong>"</span>
-                )}
+            <div className="bg-white p-4 rounded-xl border border-hairline shadow-xs flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="text-xs text-slate-500 font-medium">
+                  Showing <strong className="font-bold text-slate-900">{products.length}</strong> of{' '}
+                  <strong className="font-bold text-slate-900">{pagination.totalItems || products.length}</strong> authenticated assets
+                  {debouncedSearch && (
+                    <span> matching "<strong className="text-slate-900 font-bold">{debouncedSearch}</strong>"</span>
+                  )}
+                </div>
+
+                {/* Sorting Dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="font-montserrat text-[10px] uppercase font-bold text-slate-400">Sort By:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
+                  >
+                    <option value="curated">Featured Curations</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="title">Alphabetical (A - Z)</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Sorting Dropdown */}
-              <div className="flex items-center gap-2">
-                <span className="font-montserrat text-[10px] uppercase font-bold text-slate-400">Sort By:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none"
-                >
-                  <option value="curated">Featured Curations</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="title">Alphabetical (A - Z)</option>
-                </select>
-              </div>
+              {/* Active Category Badges */}
+              {selectedCategories.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mr-1">
+                    Filtered Categories:
+                  </span>
+                  {selectedCategories.map((c) => (
+                    <span
+                      key={c}
+                      className="inline-flex items-center gap-1 bg-[#14213D] text-[#fca311] text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-xs"
+                    >
+                      <span>{c}</span>
+                      <button
+                        onClick={() => toggleCategory(c)}
+                        className="hover:text-white transition flex items-center"
+                        title={`Remove ${c} filter`}
+                      >
+                        <span className="material-symbols-outlined text-[13px]">close</span>
+                      </button>
+                    </span>
+                  ))}
+                  <button
+                    onClick={toggleAllCategories}
+                    className="text-[11px] text-amber-600 hover:text-amber-800 hover:underline font-bold ml-1"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Results Grid */}
