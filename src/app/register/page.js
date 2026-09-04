@@ -31,7 +31,7 @@ export default function RegisterPage() {
     setErrorMsg('');
 
     if (formData.password !== formData.confirmPassword) {
-      setErrorMsg('Vault Passcodes do not match.');
+      setErrorMsg('Passwords do not match.');
       return;
     }
 
@@ -44,7 +44,7 @@ export default function RegisterPage() {
       }).unwrap();
 
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      dispatch(showToast({ type: 'success', message: 'Custody Account registered successfully!' }));
+      dispatch(showToast({ type: 'success', message: 'Account registered successfully!' }));
       
       if (res.data.user.role === 'ADMIN') {
         router.push('/admin');
@@ -66,31 +66,31 @@ export default function RegisterPage() {
         <div className="hidden lg:flex lg:col-span-5 bg-text-secondary text-white p-8 flex-col justify-between relative overflow-hidden">
           <div className="z-10 flex flex-col gap-3">
             <div className="flex items-center mb-2">
-              <img src="/logo.png" alt="Dropyhub Logo" className="h-20 w-auto max-h-20 object-contain" />
+              <img src="/logo.png" alt="Center Shopping Logo" className="h-20 w-auto max-h-20 object-contain" />
             </div>
             <span className="font-label-caps text-[9px] uppercase tracking-widest text-primary-container font-bold mt-2">
-              Privileged Depository Access
+              Welcome to Center Shopping
             </span>
             <h2 className="font-headline-md text-2xl font-extrabold leading-tight text-white uppercase">
-              Establish Your Consignment Title
+              Shop The Best Deals &amp; Quality
             </h2>
             <p className="text-xs text-secondary-fixed-dim mt-2 leading-relaxed">
-              Open an institutional account with direct-to-vault title reservation, real-time bullion valuations, and zero-fee escrow routing.
+              Create your account to enjoy verified quality products, exclusive discounts, fast doorstep delivery, and easy returns across India.
             </p>
           </div>
 
           <div className="z-10 flex flex-col gap-3 border-t border-slate-800 pt-6">
             <div className="flex items-center gap-2 text-xs text-slate-300">
               <span className="material-symbols-outlined text-[16px] text-primary-container">shield_check</span>
-              <span>Zero-Trust Architecture</span>
+              <span>100% Secure &amp; Safe Payments</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-300">
-              <span className="material-symbols-outlined text-[16px] text-primary-container">fingerprint</span>
-              <span>FIDO2 Tokenization Protocol</span>
+              <span className="material-symbols-outlined text-[16px] text-primary-container">local_shipping</span>
+              <span>Fast Express Delivery Across India</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-300">
               <span className="material-symbols-outlined text-[16px] text-primary-container">verified</span>
-              <span>LBMA / GIA Audited Compliance</span>
+              <span>100% Genuine &amp; Verified Products</span>
             </div>
           </div>
 
@@ -102,13 +102,13 @@ export default function RegisterPage() {
           <div>
             <div className="mb-6">
               <span className="font-label-caps text-[10px] uppercase tracking-widest text-primary font-bold">
-                Membership Registration
+                Center Shopping
               </span>
               <h1 className="font-headline-md text-2xl font-extrabold text-text-secondary uppercase tracking-tight mt-1">
-                Create Custody Account
+                Create Account
               </h1>
               <p className="text-xs text-text-muted mt-1">
-                Sign up to access verified enterprise tiers and unlock exclusive privileges.
+                Sign up to start shopping, track your orders, and enjoy member benefits.
               </p>
             </div>
 
@@ -123,7 +123,7 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1">
-                    Full Legal Name
+                    Full Name
                   </label>
                   <input
                     type="text"
@@ -131,14 +131,14 @@ export default function RegisterPage() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="e.g. John Doe"
+                    placeholder="e.g. Rahul Sharma"
                     className="w-full bg-surface-subtle border border-hairline px-3.5 py-2.5 rounded-lg text-xs font-inter focus:outline-none focus:border-text-secondary transition"
                   />
                 </div>
 
                 <div>
                   <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1">
-                    Institutional Email
+                    Email Address
                   </label>
                   <input
                     type="email"
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="name@institution.com"
+                    placeholder="name@example.com"
                     className="w-full bg-surface-subtle border border-hairline px-3.5 py-2.5 rounded-lg text-xs font-inter focus:outline-none focus:border-text-secondary transition"
                   />
                 </div>
@@ -155,7 +155,7 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1">
-                    Vault Passcode
+                    Password
                   </label>
                   <input
                     type="password"
@@ -171,7 +171,7 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1">
-                    Confirm Passcode
+                    Confirm Password
                   </label>
                   <input
                     type="password"
@@ -185,33 +185,18 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1">
-                  Account Designation Role
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="w-full bg-surface-subtle border border-hairline px-3.5 py-2.5 rounded-lg text-xs font-inter focus:outline-none focus:border-text-secondary transition"
-                >
-                  <option value="CUSTOMER">Custodial Client / Private Collector</option>
-                  <option value="SALES_AGENT">Authorized Vault Sales Agent</option>
-                </select>
-              </div>
-
               <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-primary-container text-text-primary py-3 rounded-lg font-label-caps text-xs uppercase font-bold tracking-wider hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 mt-4"
               >
-                <span>{isLoading ? 'Creating Vault Title...' : 'Complete Registration & Enter Vault'}</span>
+                <span>{isLoading ? 'Creating Account...' : 'Create Account'}</span>
                 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
               </button>
             </form>
 
             <div className="mt-6 text-center text-xs text-text-muted">
-              <span>Already possess custodial access? </span>
+              <span>Already have an account? </span>
               <Link href="/login" className="font-label-caps text-xs uppercase font-bold text-text-secondary hover:text-primary ml-1">
                 Sign In
               </Link>
@@ -226,12 +211,12 @@ export default function RegisterPage() {
             <span>•</span>
             <span className="flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px] text-primary">verified</span>
-              ISO 27001 Certified
+              ISO Certified
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px] text-text-secondary">shield</span>
-              Tier 4 Depository
+              100% Safe Payments
             </span>
           </div>
         </div>

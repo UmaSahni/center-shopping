@@ -4,9 +4,9 @@ import Navbar from '../components/Navbar.js';
 import Toast from '../components/Toast.js';
 
 export const metadata = {
-  title: 'Dropyhub - Curated Physical Assets & Depository Reserves',
+  title: 'Center Shopping - India’s Trusted Online Shopping Platform',
   icons: { icon: '/logo.png', apple: '/logo.png' },
-  description: 'The global institutional platform for physical precious assets, accredited numismatics, and insured custody vaults with verifiable provenance.',
+  description: 'Shop premium quality products at the best prices on Center Shopping. Fast delivery across India, verified products, and 100% secure checkout.',
 };
 
 export default function RootLayout({ children }) {

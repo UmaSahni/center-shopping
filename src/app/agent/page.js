@@ -44,10 +44,10 @@ export default function SalesAgentDashboard() {
             <span className="material-symbols-outlined text-[32px]">support_agent</span>
           </div>
           <h2 className="font-['Montserrat'] text-2xl font-bold text-[#14213D] uppercase tracking-tight">
-            Consignment Agent Terminal Required
+            Sales Agent Access Required
           </h2>
           <p className="font-['Inter'] text-sm text-[#6C757D] mt-2 max-w-md mx-auto leading-relaxed">
-            Custody transfers, consignment validation, and client dispatch verification are restricted to accredited Vault Agents.
+            Sales reports, affiliate tracking, and customer order management are restricted to authorized Sales Agents.
           </p>
           <div className="mt-8 flex flex-col gap-3">
             <button
@@ -57,7 +57,7 @@ export default function SalesAgentDashboard() {
               className="w-full py-3.5 px-6 rounded-xl bg-[#fca311] hover:bg-[#E08F07] text-black font-['Montserrat'] text-xs uppercase font-extrabold tracking-wider transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[20px]">support_agent</span>
-              <span>{isLoggingIn ? 'Authenticating Terminal...' : 'Instant 1-Click Sign-In (Sales Agent)'}</span>
+              <span>{isLoggingIn ? 'Signing In...' : 'Quick Demo Sign-In (Sales Agent)'}</span>
             </button>
             <Link
               href="/login"
@@ -87,15 +87,15 @@ export default function SalesAgentDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-label-caps text-[10px] uppercase tracking-widest text-primary-container font-bold">
-                Accredited Broker Console
+                Sales Agent Console
               </span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
             <h1 className="font-headline-lg text-2xl sm:text-3xl text-white uppercase font-extrabold tracking-tight mt-1">
-              Dropyhub Agent Terminal
+              Center Shopping Agent Portal
             </h1>
             <p className="text-xs text-secondary-fixed-dim mt-1">
-              Authorized Custody Broker: <strong className="text-white">{user?.name}</strong> • Lic: #BRK-CH-7740
+              Sales Partner: <strong className="text-white">{user?.name}</strong> • ID: #AGT-{user?.id?.slice(0, 6).toUpperCase() || '7740'}
             </p>
           </div>
 
@@ -103,7 +103,7 @@ export default function SalesAgentDashboard() {
           <div className="flex items-center gap-3 bg-[#0d1b36] p-3 rounded-xl border border-slate-700/60">
             <div>
               <span className="font-label-caps text-[9px] uppercase text-secondary-fixed-dim block">
-                Exclusive Institutional Discount Code
+                Exclusive Referral Discount Code
               </span>
               <span className="font-mono text-sm font-bold text-primary-container">
                 AGENTPROMO (15% OFF)
@@ -129,7 +129,7 @@ export default function SalesAgentDashboard() {
               <span className="material-symbols-outlined text-[24px]">trending_up</span>
             </div>
             <div>
-              <span className="font-label-caps text-[9px] uppercase text-text-muted block">Client Consignment Volume</span>
+              <span className="font-label-caps text-[9px] uppercase text-text-muted block">Total Sales Referred</span>
               <span className="font-headline-md text-xl font-bold text-text-primary font-mono block">
                 {formatPrice(stats?.totalRevenue || 0)}
               </span>
@@ -141,7 +141,7 @@ export default function SalesAgentDashboard() {
               <span className="material-symbols-outlined text-[24px]">paid</span>
             </div>
             <div>
-              <span className="font-label-caps text-[9px] uppercase text-text-muted block">Estimated Brokerage Fee (3%)</span>
+              <span className="font-label-caps text-[9px] uppercase text-text-muted block">Estimated Commission Earned (3%)</span>
               <span className="font-headline-md text-xl font-bold text-emerald-700 font-mono block">
                 {formatPrice(agentCommission)}
               </span>
@@ -153,9 +153,9 @@ export default function SalesAgentDashboard() {
               <span className="material-symbols-outlined text-[24px]">group</span>
             </div>
             <div>
-              <span className="font-label-caps text-[9px] uppercase text-text-muted block">Active Client Accounts</span>
+              <span className="font-label-caps text-[9px] uppercase text-text-muted block">Referred Customers</span>
               <span className="font-headline-md text-xl font-bold text-text-secondary font-mono block">
-                {new Set(orders.map(o => o.userId)).size || orders.length || 0} Portfolios
+                {new Set(orders.map(o => o.userId)).size || orders.length || 0} Customers
               </span>
             </div>
           </div>
@@ -167,10 +167,10 @@ export default function SalesAgentDashboard() {
         <div className="bg-white rounded-xl border border-hairline shadow-xs overflow-hidden">
           <div className="p-4 bg-surface-subtle border-b border-hairline flex items-center justify-between">
             <h3 className="font-headline-sm text-base text-text-secondary uppercase font-bold">
-              Brokerage Consignment Stream
+              Recent Customer Orders
             </h3>
             <span className="font-label-caps text-[10px] uppercase text-text-muted">
-              Live Fiduciary Orders
+              Live Orders Stream
             </span>
           </div>
 

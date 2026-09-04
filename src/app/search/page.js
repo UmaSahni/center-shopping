@@ -103,7 +103,7 @@ function SearchResultsContent() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Type to search live bullion, timepieces, rare minerals, lots (e.g. Gold, Watch, Ingot)..."
+              placeholder="Search products, brands, categories and more..."
               className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:border-[#14213D] shadow-xs transition"
             />
             {searchInput && (
@@ -148,14 +148,14 @@ function SearchResultsContent() {
             {/* Category Filter */}
             <div>
               <label className="block font-montserrat text-[11px] font-bold text-[#14213D] uppercase tracking-wider mb-2.5">
-                Depository Category
+                Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:border-[#14213D]"
               >
-                <option value="all">All Vault Categories</option>
+                <option value="all">All Categories</option>
                 {categories.map((cat, idx) => (
                   <option key={idx} value={cat}>{cat}</option>
                 ))}
@@ -165,7 +165,7 @@ function SearchResultsContent() {
             {/* Stock Availability */}
             <div>
               <label className="block font-montserrat text-[11px] font-bold text-[#14213D] uppercase tracking-wider mb-2.5">
-                Vault Availability
+                Availability
               </label>
               <label className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer select-none">
                 <input
@@ -174,7 +174,7 @@ function SearchResultsContent() {
                   onChange={(e) => setInStockOnly(e.target.checked)}
                   className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                 />
-                <span className="text-xs font-semibold text-slate-800">In Stock &amp; Allocated Only</span>
+                <span className="text-xs font-semibold text-slate-800">In Stock Only</span>
               </label>
             </div>
 
@@ -318,7 +318,7 @@ function SearchResultsContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center font-inter text-xs text-text-muted">Loading vault index...</div>}>
+    <Suspense fallback={<div className="p-12 text-center font-inter text-xs text-text-muted">Loading products...</div>}>
       <SearchResultsContent />
     </Suspense>
   );

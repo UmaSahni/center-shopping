@@ -72,7 +72,7 @@ export default function OrderDetailPage() {
         <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-hairline shadow-sm space-y-4">
           <span className="material-symbols-outlined text-4xl text-primary">lock</span>
           <h2 className="text-xl font-bold font-montserrat text-text-secondary">Sign In Required</h2>
-          <p className="text-xs text-text-muted">Please authenticate to view order tracking and consignment details.</p>
+          <p className="text-xs text-text-muted">Please sign in to view order tracking and delivery status.</p>
           <Link
             href="/login"
             className="block w-full py-3 bg-primary hover:bg-accent-hover text-text-primary font-bold text-xs uppercase tracking-wider rounded-lg transition-all"
@@ -102,8 +102,8 @@ export default function OrderDetailPage() {
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-hairline shadow-sm space-y-4">
           <span className="material-symbols-outlined text-4xl text-rose-500">receipt_long</span>
-          <h2 className="text-xl font-bold font-montserrat text-text-secondary">Order Record Not Found</h2>
-          <p className="text-xs text-text-muted">The requested order does not exist or you do not have clearance to view it.</p>
+          <h2 className="text-xl font-bold font-montserrat text-text-secondary">Order Not Found</h2>
+          <p className="text-xs text-text-muted">The requested order does not exist or you do not have permission to view it.</p>
           <Link
             href="/orders"
             className="block w-full py-3 bg-text-secondary hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all"

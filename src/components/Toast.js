@@ -51,8 +51,8 @@ export default function Toast() {
         )}
 
         <div className="flex-1 pr-2">
-          <p className="text-xs font-mono uppercase tracking-widest text-slate-400">
-            {isSuccess ? 'Vault Escrow Notice' : isError ? 'Custody Alert' : 'Notification'}
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+            {isSuccess ? 'Success' : isError ? 'Notice' : 'Update'}
           </p>
           <p className="text-sm font-medium text-slate-100 mt-0.5">{toast.message}</p>
         </div>

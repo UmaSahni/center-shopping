@@ -22,7 +22,7 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      dispatch(showToast({ type: 'error', message: 'Please sign in to reserve vault acquisitions' }));
+      dispatch(showToast({ type: 'error', message: 'Please sign in to add items to your cart' }));
       return;
     }
 
@@ -34,9 +34,9 @@ export default function ProductCard({ product }) {
         variantId: defaultVariant.id,
         quantity: 1,
       }).unwrap();
-      dispatch(showToast({ type: 'success', message: `Reserved: "${product.title}" added to your vault escrow portfolio.` }));
+      dispatch(showToast({ type: 'success', message: `Added "${product.title}" to your cart.` }));
     } catch (err) {
-      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to allocate asset' }));
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to add item' }));
     }
   };
 
@@ -46,14 +46,14 @@ export default function ProductCard({ product }) {
     setIsWishlisted(!isWishlisted);
     dispatch(showToast({
       type: 'info',
-      message: !isWishlisted ? 'Added asset to your private vault watchlist.' : 'Removed from watchlist.'
+      message: !isWishlisted ? 'Added item to your wishlist.' : 'Removed from wishlist.'
     }));
   };
 
   // Pseudo-stable discount calculation based on id
   const discountPercent = (product.id % 3 === 0 ? 18 : product.id % 2 === 0 ? 12 : 15);
   const originalPrice = minPrice > 0 ? (minPrice * (1 + discountPercent / 100)).toFixed(2) : 0;
-  const vaultId = `#DH-${String(product.id || '101').slice(0, 6).toUpperCase()}`;
+  const skuId = `#SKU-${String(product.id || '101').slice(0, 6).toUpperCase()}`;
 
   return (
     <div className="product-card group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden relative border border-hairline">
@@ -65,7 +65,7 @@ export default function ProductCard({ product }) {
             -{discountPercent}% OFF
           </span>
           <span className="bg-text-secondary text-white px-2 py-0.5 rounded font-label-caps text-[10px] uppercase tracking-wider">
-            {vaultId}
+            {skuId}
           </span>
         </div>
 
@@ -74,7 +74,7 @@ export default function ProductCard({ product }) {
           <button
             onClick={toggleWishlist}
             className={`w-8 h-8 rounded-full bg-white/90 backdrop-blur ${isWishlisted ? 'text-primary bg-primary-fixed' : 'text-text-secondary'} hover:scale-110 flex items-center justify-center shadow-md transition-transform`}
-            title="Save to Vault Wishlist"
+            title="Save to Wishlist"
           >
             <span
               className="material-symbols-outlined text-[18px]"
@@ -86,7 +86,7 @@ export default function ProductCard({ product }) {
           <Link
             href={`/product/${product.slug}`}
             className="w-8 h-8 rounded-full bg-white/90 backdrop-blur text-text-secondary hover:text-primary hover:scale-110 flex items-center justify-center shadow-md transition-transform"
-            title="Quick Inspection"
+            title="View Product"
           >
             <span className="material-symbols-outlined text-[18px]">visibility</span>
           </Link>
@@ -103,7 +103,7 @@ export default function ProductCard({ product }) {
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2">
               <span className="material-symbols-outlined text-[36px] text-outline">verified</span>
-              <span className="font-label-caps text-[10px] uppercase">Aurum Asset</span>
+              <span className="font-label-caps text-[10px] uppercase">Center Shopping</span>
             </div>
           )}
         </Link>
@@ -114,10 +114,10 @@ export default function ProductCard({ product }) {
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <span className="font-label-caps text-[10px] text-outline font-bold uppercase tracking-wider">
-              {product.category || 'Curated Vault'}
+              {product.category || 'Featured'}
             </span>
             <span className="font-label-caps text-[10px] text-primary-container bg-text-secondary px-1.5 py-0.5 rounded font-bold uppercase">
-              BIS Hallmarked
+              100% Genuine
             </span>
           </div>
 
@@ -150,17 +150,17 @@ export default function ProductCard({ product }) {
           {totalStock <= 2 && !isOutOfStock ? (
             <div className="flex items-center gap-1 text-primary font-label-caps text-[10px] uppercase font-bold tracking-wider">
               <span className="material-symbols-outlined text-[14px]">local_fire_department</span>
-              <span>🔥 Only {totalStock} left in vault</span>
+              <span>🔥 Only {totalStock} left in stock</span>
             </div>
           ) : isOutOfStock ? (
             <div className="flex items-center gap-1 text-red-600 font-label-caps text-[10px] uppercase font-bold tracking-wider">
-              <span className="material-symbols-outlined text-[14px]">lock</span>
-              <span>Allocation Exhausted</span>
+              <span className="material-symbols-outlined text-[14px]">block</span>
+              <span>Out of Stock</span>
             </div>
           ) : (
             <div className="flex items-center gap-1 text-text-secondary font-label-caps text-[10px] uppercase font-bold tracking-wider">
               <span className="material-symbols-outlined text-[14px] text-primary">verified</span>
-              <span>BIS Hallmarked &amp; Certified</span>
+              <span>100% Genuine &amp; Verified</span>
             </div>
           )}
 
@@ -181,7 +181,7 @@ export default function ProductCard({ product }) {
             className="w-full bg-primary-container text-text-primary py-2 px-3.5 rounded-lg font-label-caps text-[11px] uppercase font-bold tracking-wider hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
-            <span>{isAdding ? 'Adding...' : isOutOfStock ? 'Sold Out' : 'Reserve Lot'}</span>
+            <span>{isAdding ? 'Adding...' : isOutOfStock ? 'Sold Out' : 'Add to Cart'}</span>
           </button>
         </div>
       </div>

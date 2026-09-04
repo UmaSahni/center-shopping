@@ -163,7 +163,7 @@ export default function AdminConsolePage() {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await updateOrderStatus({ orderId, status: newStatus }).unwrap();
-      dispatch(showToast({ type: 'success', message: `Consignment #${orderId.slice(-6)} status set to ${newStatus}` }));
+      dispatch(showToast({ type: 'success', message: `Order #${orderId.slice(-6)} status set to ${newStatus}` }));
       refetchOrders();
       refetchStats();
     } catch (err) {
@@ -174,7 +174,7 @@ export default function AdminConsolePage() {
   // Open Edit Product Modal
   const openEditModal = (prod) => {
     const mainVariant = prod.variants?.[0] || {};
-    const cat = typeof prod.category === 'string' ? prod.category : prod.category?.name || 'Gold Bullion';
+    const cat = typeof prod.category === 'string' ? prod.category : prod.category?.name || 'Jewelry';
     const img = getProductImage(prod.title, prod.imageUrl || prod.images?.[0]?.url);
 
     setEditingProductId(prod.id);
@@ -183,8 +183,8 @@ export default function AdminConsolePage() {
       category: cat,
       imageUrl: img,
       description: prod.description || '',
-      variantTitle: mainVariant.title || 'Allocated Primary Lot',
-      sku: mainVariant.sku || `AV-SKU-${prod.id.slice(0, 6).toUpperCase()}`,
+      variantTitle: mainVariant.title || 'Standard Variant',
+      sku: mainVariant.sku || `CS-SKU-${prod.id.slice(0, 6).toUpperCase()}`,
       price: mainVariant.price?.toString() || prod.basePrice?.toString() || '0',
       stockQuantity: mainVariant.stockQuantity?.toString() || '50',
       lowStockThreshold: mainVariant.lowStockThreshold?.toString() || '5',
@@ -205,7 +205,7 @@ export default function AdminConsolePage() {
         expiryDate: productForm.expiryDate ? new Date(productForm.expiryDate).toISOString() : null,
         variants: [
           {
-            title: productForm.variantTitle.trim() || 'Standard Custodial Lot',
+            title: productForm.variantTitle.trim() || 'Standard Variant',
             sku: productForm.sku.trim(),
             price: parseFloat(productForm.price),
             stockQuantity: parseInt(productForm.stockQuantity, 10) || 0,
@@ -236,8 +236,8 @@ export default function AdminConsolePage() {
         expiryDate: productForm.expiryDate ? new Date(productForm.expiryDate).toISOString() : null,
         variants: [
           {
-            title: productForm.variantTitle.trim() || 'Standard Custodial Lot',
-            sku: productForm.sku.trim() || `AV-VAULT-${Date.now().toString().slice(-4)}`,
+            title: productForm.variantTitle.trim() || 'Standard Variant',
+            sku: productForm.sku.trim() || `CS-SKU-${Date.now().toString().slice(-4)}`,
             price: parseFloat(productForm.price),
             stockQuantity: parseInt(productForm.stockQuantity, 10) || 50,
             lowStockThreshold: parseInt(productForm.lowStockThreshold, 10) || 5,
@@ -245,14 +245,14 @@ export default function AdminConsolePage() {
         ],
       };
       await createProduct(payload).unwrap();
-      dispatch(showToast({ type: 'success', message: `Physical asset "${payload.title}" registered in vault!` }));
+      dispatch(showToast({ type: 'success', message: `Product "${payload.title}" created successfully!` }));
       setShowAddProductModal(false);
       setProductForm({
         title: '',
-        category: 'Gold Bullion',
+        category: 'Jewelry',
         imageUrl: '',
         description: '',
-        variantTitle: 'Allocated Primary Lot',
+        variantTitle: 'Standard Variant',
         sku: '',
         price: '',
         stockQuantity: '50',
@@ -382,9 +382,9 @@ export default function AdminConsolePage() {
 
           {/* Logo & Header */}
           <div className="flex items-center gap-3 mb-6">
-            <img src="/logo.png" alt="Dropyhub Logo" className="h-10 w-auto object-contain rounded" />
+            <img src="/logo.png" alt="Center Shopping Logo" className="h-10 w-auto object-contain rounded" />
             <div>
-              <h1 className="font-headline-sm font-bold text-lg text-white tracking-tight uppercase">Dropyhub Vault</h1>
+              <h1 className="font-headline-sm font-bold text-lg text-white tracking-tight uppercase">Center Shopping</h1>
               <p className="font-label-caps text-[10px] text-[#F59E0B] tracking-wider uppercase font-semibold">
                 Staff Operations &amp; Admin Console
               </p>
@@ -394,10 +394,10 @@ export default function AdminConsolePage() {
           <div className="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 mb-5 text-xs text-slate-300 space-y-1">
             <p className="font-semibold text-white flex items-center gap-1.5">
               <span className="material-symbols-outlined text-amber-400 text-sm">shield</span>
-              Restricted Depository Terminal
+              Restricted Admin Terminal
             </p>
             <p className="text-[11px] text-slate-400">
-              Only authenticated <strong>Administrators</strong> and authorized <strong>Sales Agents</strong> have clearance to access this control node.
+              Only authorized <strong>Administrators</strong> and registered <strong>Sales Agents</strong> have access to this portal.
             </p>
           </div>
 
@@ -447,7 +447,7 @@ export default function AdminConsolePage() {
           <form onSubmit={handleStaffLogin} className="space-y-3.5">
             <div>
               <label className="block font-label-caps text-[10px] uppercase text-slate-300 font-bold mb-1">
-                Staff Depository Email
+                Staff Work Email
               </label>
               <input
                 type="email"
@@ -512,7 +512,7 @@ export default function AdminConsolePage() {
               className="h-9 w-auto object-contain bg-white/10 p-1 rounded-lg"
             />
             <div className="flex flex-col">
-              <span className="font-montserrat font-bold text-sm uppercase text-white tracking-tight">Dropyhub Vault</span>
+              <span className="font-montserrat font-bold text-sm uppercase text-white tracking-tight">Center Shopping</span>
               <span className="font-label-caps text-[10px] text-amber-400 uppercase tracking-wider font-semibold">Admin Console</span>
             </div>
           </div>
@@ -583,15 +583,15 @@ export default function AdminConsolePage() {
           {/* Real-Time Node Status Pill */}
           <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 flex flex-col gap-1.5 text-[11px]">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400 font-medium">Vault Node 01</span>
+              <span className="text-slate-400 font-medium">Store Database</span>
               <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 ONLINE
               </span>
             </div>
             <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
-              <span>Escrow Security</span>
-              <span className="text-amber-400 font-semibold">99.98% Active</span>
+              <span>Security Sync</span>
+              <span className="text-amber-400 font-semibold">100% Active</span>
             </div>
           </div>
 
@@ -636,7 +636,7 @@ export default function AdminConsolePage() {
               <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
               <input
                 type="text"
-                placeholder="Search vaults, orders, SKU, clients..."
+                placeholder="Search products, orders, SKU, customers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-transparent hover:border-slate-300 focus:border-amber-500 focus:bg-white rounded-lg text-xs outline-none transition-all"
@@ -682,15 +682,15 @@ export default function AdminConsolePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded text-[10px] font-bold uppercase tracking-wider">
-                      Vault Portal / Executive Operations
+                      Admin Portal / Store Operations
                     </span>
                     <span className="text-[10px] text-slate-400">• Real-Time Sync</span>
                   </div>
                   <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight mt-1">
-                    Executive Overview & Telemetry
+                    Store Overview &amp; Analytics
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Real-time custodial sales, fulfillment throughput, and depository inventory across global vaults.
+                    Real-time sales, order fulfillment, and product inventory management across all categories.
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -699,12 +699,12 @@ export default function AdminConsolePage() {
                       refetchStats();
                       refetchOrders();
                       refetchProducts();
-                      dispatch(showToast({ type: 'success', message: 'Depository telemetry refreshed' }));
+                      dispatch(showToast({ type: 'success', message: 'Dashboard metrics refreshed' }));
                     }}
                     className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs shadow-sm transition-all"
                   >
                     <span className="material-symbols-outlined text-[16px]">sync</span>
-                    Sync Telemetry
+                    Sync Data
                   </button>
                   <button
                     onClick={() => setActiveTab('products')}
@@ -722,14 +722,14 @@ export default function AdminConsolePage() {
                   {
                     title: 'Gross Sales / Turnover',
                     value: formatPrice(totalRevenueVal),
-                    sub: 'Cumulative vault revenue',
+                    sub: 'Cumulative store revenue',
                     icon: 'payments',
                     color: 'text-amber-600 bg-amber-50 border-amber-200/60',
                   },
                   {
                     title: 'Total Orders',
-                    value: `${totalOrdersCount} Consignments`,
-                    sub: 'Total customer acquisitions',
+                    value: `${totalOrdersCount} Orders`,
+                    sub: 'Total customer purchases',
                     icon: 'shopping_cart',
                     color: 'text-blue-600 bg-blue-50 border-blue-200/60',
                   },
@@ -788,7 +788,7 @@ export default function AdminConsolePage() {
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-amber-600 text-[20px]">inventory</span>
                       <h3 className="font-montserrat text-xs font-bold uppercase text-slate-900 tracking-wider">
-                        Low Stock Depository Alerts ({lowStockVariantsList.length})
+                        Low Stock Alerts ({lowStockVariantsList.length})
                       </h3>
                     </div>
                     <button
@@ -801,7 +801,7 @@ export default function AdminConsolePage() {
                   {lowStockVariantsList.length === 0 ? (
                     <div className="py-6 text-center text-xs text-slate-400">
                       <span className="material-symbols-outlined text-emerald-500 text-2xl mb-1 block">check_circle</span>
-                      All vault inventory levels are above safety thresholds.
+                      All product inventory levels are healthy.
                     </div>
                   ) : (
                     <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto">
@@ -831,13 +831,13 @@ export default function AdminConsolePage() {
                   )}
                 </div>
 
-                {/* Panel 2: Expiring Depository Lots */}
+                {/* Panel 2: Expiring Product Lots */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-purple-600 text-[20px]">event_busy</span>
                       <h3 className="font-montserrat text-xs font-bold uppercase text-slate-900 tracking-wider">
-                        Expiring Vault Allocations ({expiringProductsList.length})
+                        Expiring Product Batches ({expiringProductsList.length})
                       </h3>
                     </div>
                     <button
@@ -850,7 +850,7 @@ export default function AdminConsolePage() {
                   {expiringProductsList.length === 0 ? (
                     <div className="py-6 text-center text-xs text-slate-400">
                       <span className="material-symbols-outlined text-emerald-500 text-2xl mb-1 block">verified</span>
-                      No active allocations expiring in the next 30 days.
+                      No products expiring in the next 30 days.
                     </div>
                   ) : (
                     <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto">
@@ -883,9 +883,9 @@ export default function AdminConsolePage() {
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                   <div>
                     <h2 className="text-sm font-bold text-slate-900 font-montserrat uppercase tracking-wider">
-                      Recent Vault Consignments
+                      Recent Orders
                     </h2>
-                    <p className="text-xs text-slate-500">Live order flow and fulfillment transitions</p>
+                    <p className="text-xs text-slate-500">Live order flow and fulfillment updates</p>
                   </div>
                   <button
                     onClick={() => setActiveTab('orders')}
@@ -900,7 +900,7 @@ export default function AdminConsolePage() {
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
-                        <th className="px-6 py-3">Consignment #</th>
+                        <th className="px-6 py-3">Order #</th>
                         <th className="px-6 py-3">Timestamp</th>
                         <th className="px-6 py-3">Client</th>
                         <th className="px-6 py-3">Asset Items</th>
@@ -960,7 +960,7 @@ export default function AdminConsolePage() {
                       {rawOrders.length === 0 && (
                         <tr>
                           <td colSpan="8" className="px-6 py-12 text-center text-slate-400 text-xs">
-                            No consignments registered yet. Place an order in storefront to test!
+                            No orders placed yet. Place an order in storefront to test!
                           </td>
                         </tr>
                       )}
@@ -979,7 +979,7 @@ export default function AdminConsolePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded text-[10px] font-bold uppercase tracking-wider">
-                      Vault Inventory Node 01
+                      Product Catalog Management
                     </span>
                     <span className="text-[10px] text-slate-400">• Real-Time Sync Active</span>
                   </div>
@@ -987,7 +987,7 @@ export default function AdminConsolePage() {
                     Product Catalog Management
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Manage vault acquisitions, precious metals reserves, horological specimens, and dynamic collateral inventory.
+                    Manage products, pricing, stock levels, variants, and catalog items.
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -998,7 +998,7 @@ export default function AdminConsolePage() {
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
                       a.href = url;
-                      a.download = 'vault_inventory.csv';
+                      a.download = 'products_inventory.csv';
                       a.click();
                       dispatch(showToast({ type: 'success', message: 'Catalog CSV exported' }));
                     }}
@@ -1033,10 +1033,10 @@ export default function AdminConsolePage() {
               {/* 4 Inventory Stat Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {[
-                  { label: 'Total Catalog Items', val: rawProducts.length || 12, sub: 'All physical categories', icon: 'grid_view', bg: 'text-slate-900 bg-slate-100' },
-                  { label: 'In Stock & Active', val: activeStockItems, sub: 'Available for immediate dispatch', icon: 'check_circle', bg: 'text-emerald-700 bg-emerald-50' },
+                  { label: 'Total Catalog Items', val: rawProducts.length || 12, sub: 'All product categories', icon: 'grid_view', bg: 'text-slate-900 bg-slate-100' },
+                  { label: 'In Stock & Active', val: activeStockItems, sub: 'Available for immediate delivery', icon: 'check_circle', bg: 'text-emerald-700 bg-emerald-50' },
                   { label: 'Low Stock Alert', val: lowStockItems, sub: 'Units below 10 units', icon: 'warning', bg: 'text-amber-700 bg-amber-50' },
-                  { label: 'Out of Stock', val: outOfStockItems, sub: 'Depleted depository vaults', icon: 'error', bg: 'text-rose-700 bg-rose-50' },
+                  { label: 'Out of Stock', val: outOfStockItems, sub: 'Zero stock products', icon: 'error', bg: 'text-rose-700 bg-rose-50' },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
@@ -1058,7 +1058,7 @@ export default function AdminConsolePage() {
                     <span className="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-lg">search</span>
                     <input
                       type="text"
-                      placeholder="Filter by title, SKU, provenance..."
+                      placeholder="Filter by title, SKU, brand..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-amber-500"
@@ -1069,14 +1069,14 @@ export default function AdminConsolePage() {
                     onChange={(e) => setProductCategoryFilter(e.target.value)}
                     className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none"
                   >
-                    <option value="ALL">All Vault Categories</option>
+                    <option value="ALL">All Categories</option>
                     {categoriesList.map((cat, idx) => (
                       <option key={idx} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
                 <div className="text-xs text-slate-500 font-medium">
-                  Showing <span className="font-bold text-slate-900">{filteredProducts.length}</span> assets
+                  Showing <span className="font-bold text-slate-900">{filteredProducts.length}</span> products
                 </div>
               </div>
 
@@ -1203,15 +1203,15 @@ export default function AdminConsolePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded text-[10px] font-bold uppercase tracking-wider">
-                      Custodial Asset Protocol
+                      Store Fulfillment
                     </span>
-                    <span className="text-[10px] text-slate-400">• Direct Vault Interface</span>
+                    <span className="text-[10px] text-slate-400">• Order Management</span>
                   </div>
                   <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight mt-1">
-                    Consignment & Order Registry
+                    Orders &amp; Fulfillment Registry
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Manage, verify, and dispatch custodial luxury asset transactions with real-time tracking.
+                    Manage, verify, and dispatch customer orders with real-time tracking.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1250,10 +1250,10 @@ export default function AdminConsolePage() {
                       <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
                         <th className="px-6 py-3.5">Order ID</th>
                         <th className="px-6 py-3.5">Date & Time</th>
-                        <th className="px-6 py-3.5">Sovereign Client</th>
-                        <th className="px-6 py-3.5">Asset Allocation</th>
+                        <th className="px-6 py-3.5">Customer</th>
+                        <th className="px-6 py-3.5">Products Ordered</th>
                         <th className="px-6 py-3.5">Total INR</th>
-                        <th className="px-6 py-3.5">Consignment Status</th>
+                        <th className="px-6 py-3.5">Order Status</th>
                         <th className="px-6 py-3.5 text-right">Invoice / Details</th>
                       </tr>
                     </thead>
@@ -1276,7 +1276,7 @@ export default function AdminConsolePage() {
                                   <img
                                     key={idx}
                                     src={img}
-                                    alt="Asset"
+                                    alt="Product"
                                     title={item.product?.title}
                                     className="w-9 h-9 rounded-lg object-cover border border-slate-200 bg-white"
                                   />
@@ -1307,7 +1307,7 @@ export default function AdminConsolePage() {
                               href={`/orders/${order.id}`}
                               className="px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1"
                             >
-                              View Consignment
+                              View Order
                               <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                             </Link>
                           </td>
@@ -1335,15 +1335,15 @@ export default function AdminConsolePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded text-[10px] font-bold uppercase tracking-wider">
-                      Promotions & Concessions
+                      Promotions &amp; Discounts
                     </span>
-                    <span className="text-[10px] text-slate-400">• Vault Privileges</span>
+                    <span className="text-[10px] text-slate-400">• Store Benefits</span>
                   </div>
                   <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight mt-1">
-                    Coupon & Concession Management
+                    Coupon &amp; Discount Management
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Create discount vouchers, configure institutional tier rebates, and monitor client redemptions.
+                    Create discount vouchers, configure promotional discounts, and monitor customer redemptions.
                   </p>
                 </div>
                 <button
@@ -1496,7 +1496,7 @@ export default function AdminConsolePage() {
                   Sales Agent Ledger & Commissions
                 </h1>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Monitor partner agent referral links, attributed consignment sales, and commission disbursements.
+                  Monitor partner agent referral links, attributed order sales, and commission disbursements.
                 </p>
               </div>
 
@@ -1512,7 +1512,7 @@ export default function AdminConsolePage() {
                   <p className="text-[11px] text-slate-400 mt-1">Directly attributed</p>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                  <p className="text-xs text-slate-400 font-medium">Attributed Consignments</p>
+                  <p className="text-xs text-slate-400 font-medium">Attributed Orders</p>
                   <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">16 Sales</h3>
                   <p className="text-[11px] text-slate-400 mt-1">₹14,85,000 Gross Volume</p>
                 </div>
@@ -1525,7 +1525,7 @@ export default function AdminConsolePage() {
             <div className="space-y-8 animate-fadeIn">
               <div>
                 <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight">
-                  Depository Analytics & Reports
+                  Sales Analytics & Reports
                 </h1>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Financial telemetry, reserve balances, and exportable audit records.
@@ -1538,7 +1538,7 @@ export default function AdminConsolePage() {
                 </div>
                 <h3 className="text-base font-bold text-slate-900 font-montserrat">Financial Telemetry Ready</h3>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  All transaction ledgers and physical asset depository movements are cryptographically synced.
+                  All transaction records and store activities are securely synchronized in real time.
                 </p>
                 <div className="flex items-center justify-center gap-3 pt-2">
                   <button
@@ -1560,7 +1560,7 @@ export default function AdminConsolePage() {
                   System Settings & Governance
                 </h1>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Configure platform parameters, vault security keys, and real-time socket connections.
+                  Configure platform parameters, security credentials, and real-time socket connections.
                 </p>
               </div>
 
@@ -1576,8 +1576,8 @@ export default function AdminConsolePage() {
                 </div>
                 <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Escrow Collateral Guarantee</h4>
-                    <p className="text-xs text-slate-400">Verifies 100% physical depository backing for every order.</p>
+                    <h4 className="font-bold text-slate-900 text-sm">Buyer Protection Guarantee</h4>
+                    <p className="text-xs text-slate-400">Verifies 100% genuine product guarantee and buyer protection.</p>
                   </div>
                   <span className="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">
                     ACTIVE
@@ -1605,9 +1605,9 @@ export default function AdminConsolePage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div>
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 uppercase tracking-wider">
-                  <span>Vault Inventory Node 01</span>
+                  <span>Product Management</span>
                   <span>•</span>
-                  <span>Asset Modification Protocol</span>
+                  <span>Edit Details</span>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 font-montserrat mt-0.5">Edit Product Details</h3>
               </div>
@@ -1625,11 +1625,11 @@ export default function AdminConsolePage() {
             <form onSubmit={handleSaveProductEdit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Asset Title *</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Title *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 50g Minted Gold Ingot"
+                    placeholder="e.g. Diamond Solitaire Ring"
                     value={productForm.title}
                     onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:border-amber-500 outline-none"
@@ -1637,25 +1637,25 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Depository Category *</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Category *</label>
                   <select
                     value={productForm.category}
                     onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:border-amber-500 outline-none"
                   >
-                    <option value="Gold Bullion">Gold Bullion</option>
-                    <option value="Silver Bullion">Silver Bullion</option>
-                    <option value="Platinum Group Metals">Platinum Group Metals</option>
-                    <option value="Horology & Watches">Horology & Watches</option>
-                    <option value="Rare Numismatics">Rare Numismatics</option>
-                    <option value="Fine Jewelry">Fine Jewelry</option>
-                    <option value="Bespoke Objects">Bespoke Objects</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Watches">Watches</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Home">Home</option>
+                    <option value="Beauty">Beauty</option>
+                    <option value="Accessories">Accessories</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Asset Image URL</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Image URL</label>
                 <input
                   type="text"
                   placeholder="https://..."
@@ -1666,10 +1666,10 @@ export default function AdminConsolePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Provenance & Assayer Description</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Description</label>
                 <textarea
                   rows="3"
-                  placeholder="Certified physical bullion asset authenticated with 99.99% purity spectroscopy and bonded depository storage."
+                  placeholder="Premium quality authentic product with manufacturer warranty and express shipping across India."
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:border-amber-500 outline-none resize-none"
@@ -1770,11 +1770,11 @@ export default function AdminConsolePage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div>
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 uppercase tracking-wider">
-                  <span>Vault Inventory Node 01</span>
+                  <span>Product Catalog</span>
                   <span>•</span>
-                  <span>Physical Asset Induction</span>
+                  <span>New Product</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 font-montserrat mt-0.5">Register Physical Asset</h3>
+                <h3 className="text-lg font-bold text-slate-900 font-montserrat mt-0.5">Add New Product</h3>
               </div>
               <button
                 onClick={() => setShowAddProductModal(false)}
@@ -1787,11 +1787,11 @@ export default function AdminConsolePage() {
             <form onSubmit={handleCreateProduct} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Asset Title *</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Title *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 50g Minted Gold Ingot"
+                    placeholder="e.g. Designer Silver Bracelet"
                     value={productForm.title}
                     onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:border-amber-500 outline-none"
@@ -1799,25 +1799,25 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Depository Category *</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Category *</label>
                   <select
                     value={productForm.category}
                     onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:border-amber-500 outline-none"
                   >
-                    <option value="Gold Bullion">Gold Bullion</option>
-                    <option value="Silver Bullion">Silver Bullion</option>
-                    <option value="Platinum Group Metals">Platinum Group Metals</option>
-                    <option value="Horology & Watches">Horology & Watches</option>
-                    <option value="Rare Numismatics">Rare Numismatics</option>
-                    <option value="Fine Jewelry">Fine Jewelry</option>
-                    <option value="Bespoke Objects">Bespoke Objects</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Watches">Watches</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Home">Home</option>
+                    <option value="Beauty">Beauty</option>
+                    <option value="Accessories">Accessories</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Asset Image URL</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Image URL</label>
                 <input
                   type="text"
                   placeholder="https://..."
@@ -1828,10 +1828,10 @@ export default function AdminConsolePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Provenance & Assayer Description</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Product Description</label>
                 <textarea
                   rows="3"
-                  placeholder="Certified physical bullion asset authenticated with 99.99% purity spectroscopy and bonded depository storage."
+                  placeholder="High quality product with genuine brand warranty and fast delivery across India."
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:border-amber-500 outline-none resize-none"
@@ -1845,7 +1845,7 @@ export default function AdminConsolePage() {
                     <label className="block text-[11px] font-bold text-slate-600 mb-1">Variant Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Allocated Primary Lot"
+                      placeholder="e.g. Standard Variant"
                       value={productForm.variantTitle}
                       onChange={(e) => setProductForm({ ...productForm, variantTitle: e.target.value })}
                       className="w-full px-3 py-1.5 border border-slate-300 bg-white rounded-lg text-xs"
@@ -1855,7 +1855,7 @@ export default function AdminConsolePage() {
                     <label className="block text-[11px] font-bold text-slate-600 mb-1">SKU Code</label>
                     <input
                       type="text"
-                      placeholder="e.g. AV-GLD-50G"
+                      placeholder="e.g. CS-PRD-01"
                       value={productForm.sku}
                       onChange={(e) => setProductForm({ ...productForm, sku: e.target.value.toUpperCase() })}
                       className="w-full px-3 py-1.5 border border-slate-300 bg-white rounded-lg text-xs font-mono uppercase"
@@ -1870,7 +1870,7 @@ export default function AdminConsolePage() {
                       type="number"
                       required
                       min="1"
-                      placeholder="e.g. 385000"
+                      placeholder="e.g. 4999"
                       value={productForm.price}
                       onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                       className="w-full px-3 py-1.5 border border-slate-300 bg-white rounded-lg text-xs font-semibold"
@@ -1914,7 +1914,7 @@ export default function AdminConsolePage() {
                   className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs shadow-md shadow-amber-500/20 flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[16px]">add_box</span>
-                  {isCreatingProduct ? 'Registering...' : 'Register Asset in Vault'}
+                  {isCreatingProduct ? 'Saving...' : 'Add Product to Store'}
                 </button>
               </div>
             </form>

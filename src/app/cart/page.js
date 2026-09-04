@@ -46,7 +46,7 @@ export default function CartPage() {
         password: 'Password@123',
       }).unwrap();
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      dispatch(showToast({ type: 'success', message: 'Vault Access Granted: Welcome John Vault Collector' }));
+      dispatch(showToast({ type: 'success', message: 'Welcome back, John Doe!' }));
     } catch (err) {
       dispatch(showToast({ type: 'error', message: err?.data?.message || 'Demo access failed' }));
     }
@@ -105,17 +105,17 @@ export default function CartPage() {
       }).unwrap();
       const couponObj = res.data?.coupon || res.coupon || res.data;
       dispatch(setActiveCoupon(couponObj));
-      dispatch(showToast({ type: 'success', message: `Privilege voucher "${couponObj.code}" verified & applied!` }));
+      dispatch(showToast({ type: 'success', message: `Coupon "${couponObj.code}" applied successfully!` }));
       setCouponInput('');
     } catch (err) {
-      setCouponError(err?.data?.message || 'Invalid or expired concession code');
-      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Invalid concession code' }));
+      setCouponError(err?.data?.message || 'Invalid or expired coupon code');
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Invalid coupon code' }));
     }
   };
 
   const handleRemoveCoupon = () => {
     dispatch(removeActiveCoupon());
-    dispatch(showToast({ type: 'info', message: 'Concession voucher removed' }));
+    dispatch(showToast({ type: 'info', message: 'Coupon removed' }));
   };
 
   const handleUpdateQty = async (itemId, newQty) => {
@@ -133,17 +133,17 @@ export default function CartPage() {
   const handleRemoveItem = async (itemId) => {
     try {
       await removeCartItem(itemId).unwrap();
-      dispatch(showToast({ type: 'info', message: 'Asset removed from custody bag' }));
+      dispatch(showToast({ type: 'info', message: 'Item removed from cart' }));
     } catch (err) {
       dispatch(showToast({ type: 'error', message: err?.data?.message || 'Removal failed' }));
     }
   };
 
   const handleClearCart = async () => {
-    if (!window.confirm('Release all staged vault acquisitions from your current session?')) return;
+    if (!window.confirm('Are you sure you want to remove all items from your cart?')) return;
     try {
       await clearCart().unwrap();
-      dispatch(showToast({ type: 'info', message: 'Custody cart cleared' }));
+      dispatch(showToast({ type: 'info', message: 'Cart cleared' }));
     } catch (err) {
       dispatch(showToast({ type: 'error', message: 'Failed to clear cart' }));
     }
@@ -165,31 +165,31 @@ export default function CartPage() {
                 <span className="material-symbols-outlined text-[#867461] text-[18px]">chevron_right</span>
                 <li className="flex items-center gap-2 text-[#6C757D]">
                   <span className="w-6 h-6 rounded-full bg-[#e8e8e8] text-[#6C757D] font-mono text-[11px] flex items-center justify-center font-semibold">2</span>
-                  <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Shipping &amp; Verification</span>
+                  <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Shipping Details</span>
                 </li>
                 <span className="material-symbols-outlined text-[#867461] text-[18px]">chevron_right</span>
                 <li className="flex items-center gap-2 text-[#6C757D]">
                   <span className="w-6 h-6 rounded-full bg-[#e8e8e8] text-[#6C757D] font-mono text-[11px] flex items-center justify-center font-semibold">3</span>
-                  <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Payment &amp; Escrow</span>
+                  <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Payment</span>
                 </li>
               </ol>
 
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-[#E5E5E5] text-[#14213D]">
                 <span className="material-symbols-outlined text-[#fca311] text-[18px] animate-pulse">timer</span>
-                <span className="font-['Inter'] text-xs font-semibold">Session Locked:</span>
+                <span className="font-['Inter'] text-xs font-semibold">Session Timer:</span>
                 <span className="font-mono text-xs font-bold tracking-widest text-[#855300]">{formatTimer(timeLeft)}</span>
               </div>
             </nav>
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
-                <span className="font-['Montserrat'] text-xs uppercase tracking-widest text-[#855300] font-bold">Secure Architectural Depository</span>
-                <h1 className="font-['Montserrat'] text-3xl sm:text-4xl font-extrabold text-[#14213D] uppercase tracking-tight mt-1">Custodial Bag Access</h1>
-                <p className="font-['Inter'] text-sm text-[#6C757D] mt-1">Physical acquisitions require authenticated vault depository credentials.</p>
+                <span className="font-['Montserrat'] text-xs uppercase tracking-widest text-[#855300] font-bold">Center Shopping</span>
+                <h1 className="font-['Montserrat'] text-3xl sm:text-4xl font-extrabold text-[#14213D] uppercase tracking-tight mt-1">Shopping Cart</h1>
+                <p className="font-['Inter'] text-sm text-[#6C757D] mt-1">Please sign in to view and manage your shopping cart items.</p>
               </div>
               <div className="flex items-center gap-2 text-[#6C757D] text-xs font-mono">
                 <span className="material-symbols-outlined text-[18px] text-[#14213D]">shield_lock</span>
-                <span>Session ID: <strong className="text-[#14213D]">#DH-BLR-884</strong></span>
+                <span>Ref: <strong className="text-[#14213D]">#CS-884</strong></span>
               </div>
             </div>
           </div>
@@ -201,14 +201,14 @@ export default function CartPage() {
             <div className="absolute -top-12 -right-12 w-36 h-36 bg-[#fca311]/10 rounded-full blur-2xl"></div>
 
             <div className="w-16 h-16 rounded-2xl bg-[#14213D] text-[#fca311] flex items-center justify-center mx-auto mb-6 shadow-md">
-              <span className="material-symbols-outlined text-[32px]">vpn_key</span>
+              <span className="material-symbols-outlined text-[32px]">shopping_bag</span>
             </div>
 
             <h2 className="font-['Montserrat'] text-2xl font-bold text-[#14213D] uppercase tracking-tight">
-              Sign In to View Allocated Lots
+              Sign In to View Your Cart
             </h2>
             <p className="font-['Inter'] text-sm text-[#6C757D] mt-2 max-w-md mx-auto leading-relaxed">
-              Your physical acquisitions and custodial escrow holds are encrypted under your client dossier. Sign in to inspect your bag, adjust allocations, or proceed to settlement.
+              Your selected items are saved in your account. Sign in to review your cart, apply discount coupons, and proceed to checkout.
             </p>
 
             <div className="mt-8 flex flex-col gap-3">
@@ -219,14 +219,14 @@ export default function CartPage() {
                 className="w-full py-3.5 px-6 rounded-xl bg-[#fca311] hover:bg-[#E08F07] text-[#000000] font-['Montserrat'] text-xs uppercase font-extrabold tracking-wider transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99]"
               >
                 <span className="material-symbols-outlined text-[20px]">verified_user</span>
-                <span>{isLoggingIn ? 'Decrypting Vault Session...' : 'Instant Demo Sign-In (Collector)'}</span>
+                <span>{isLoggingIn ? 'Signing In...' : 'Quick Demo Sign-In (Customer)'}</span>
               </button>
 
               <Link
                 href="/login"
                 className="w-full py-3.5 px-6 rounded-xl bg-[#14213D] hover:bg-black text-white font-['Montserrat'] text-xs uppercase font-bold tracking-wider transition shadow-sm flex items-center justify-center gap-2"
               >
-                <span>Sign In with Custom Credentials</span>
+                <span>Sign In with Email</span>
                 <span className="material-symbols-outlined text-[18px]">login</span>
               </Link>
             </div>
@@ -234,12 +234,12 @@ export default function CartPage() {
             <div className="mt-6 pt-6 border-t border-[#E5E5E5] flex items-center justify-center gap-4 text-xs text-[#6C757D]">
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px] text-[#fca311]">lock</span>
-                256-Bit TLS Escrow
+                256-Bit SSL Secure
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px] text-[#fca311]">security</span>
-                Bonded Custody
+                100% Safe Checkout
               </span>
             </div>
           </div>
@@ -263,19 +263,19 @@ export default function CartPage() {
               <span className="material-symbols-outlined text-[#867461] text-[18px]">chevron_right</span>
               <li className="flex items-center gap-2 text-[#6C757D]">
                 <span className="w-6 h-6 rounded-full bg-[#e8e8e8] text-[#6C757D] font-mono text-[11px] flex items-center justify-center font-semibold">2</span>
-                <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Shipping &amp; Verification</span>
+                <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Shipping Details</span>
               </li>
               <span className="material-symbols-outlined text-[#867461] text-[18px]">chevron_right</span>
               <li className="flex items-center gap-2 text-[#6C757D]">
                 <span className="w-6 h-6 rounded-full bg-[#e8e8e8] text-[#6C757D] font-mono text-[11px] flex items-center justify-center font-semibold">3</span>
-                <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Payment &amp; Escrow</span>
+                <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#6C757D]">Payment</span>
               </li>
             </ol>
 
-            {/* Session Lock Timer Pill */}
+            {/* Session Timer Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-[#E5E5E5] text-[#14213D]">
               <span className="material-symbols-outlined text-[#fca311] text-[18px] animate-pulse">timer</span>
-              <span className="font-['Inter'] text-xs font-semibold">Inventory Reserved:</span>
+              <span className="font-['Inter'] text-xs font-semibold">Items Reserved:</span>
               <span className="font-mono text-xs font-bold tracking-widest text-[#855300]">{formatTimer(timeLeft)}</span>
             </div>
           </nav>
@@ -283,17 +283,17 @@ export default function CartPage() {
           {/* Section Title & Meta Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <span className="font-['Montserrat'] text-xs uppercase tracking-widest text-[#855300] font-bold">Secure Architectural Depository</span>
-              <h1 className="font-['Montserrat'] text-3xl sm:text-4xl font-extrabold text-[#14213D] uppercase tracking-tight mt-1">Your Shopping Bag</h1>
+              <span className="font-['Montserrat'] text-xs uppercase tracking-widest text-[#855300] font-bold">Center Shopping</span>
+              <h1 className="font-['Montserrat'] text-3xl sm:text-4xl font-extrabold text-[#14213D] uppercase tracking-tight mt-1">Your Shopping Cart</h1>
               <p className="font-['Inter'] text-sm text-[#6C757D] mt-1">
                 {items.length === 0
-                  ? 'No physical assets currently allocated in your session.'
-                  : `${items.length} authenticated physical acquisition${items.length > 1 ? 's' : ''} staged for custody dispatch`}
+                  ? 'No items currently in your cart.'
+                  : `${items.length} item${items.length > 1 ? 's' : ''} ready for checkout`}
               </p>
             </div>
             <div className="flex items-center gap-2 text-[#6C757D] text-xs font-mono">
-              <span className="material-symbols-outlined text-[18px] text-[#14213D]">shield_lock</span>
-              <span>Escrow Session ID: <strong className="text-[#14213D] font-mono">#DH-BLR-884</strong></span>
+              <span className="material-symbols-outlined text-[18px] text-[#14213D]">shopping_bag</span>
+              <span>Cart Ref: <strong className="text-[#14213D] font-mono">#CS-884</strong></span>
             </div>
           </div>
         </div>
@@ -306,16 +306,16 @@ export default function CartPage() {
             <div className="w-16 h-16 rounded-2xl bg-[#F8F9FA] text-[#867461] flex items-center justify-center mx-auto mb-4 border border-[#E5E5E5]">
               <span className="material-symbols-outlined text-[32px]">shopping_bag</span>
             </div>
-            <h3 className="font-['Montserrat'] text-xl font-bold text-[#14213D] uppercase">Your Custodial Bag is Empty</h3>
+            <h3 className="font-['Montserrat'] text-xl font-bold text-[#14213D] uppercase">Your Shopping Cart is Empty</h3>
             <p className="font-['Inter'] text-sm text-[#6C757D] mt-2 max-w-md mx-auto">
-              Explore our vault collections to reserve physical investment lots, certified horology, and verified bullion.
+              Explore our wide range of quality products and top deals.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/"
                 className="px-6 py-3 rounded-lg bg-[#fca311] hover:bg-[#E08F07] text-[#000000] font-['Montserrat'] text-xs uppercase font-extrabold tracking-wider transition shadow-sm"
               >
-                Browse Curated Vault Catalog
+                Browse Products
               </Link>
             </div>
           </div>
@@ -330,9 +330,9 @@ export default function CartPage() {
                     <span className="material-symbols-outlined text-[#fca311] text-[24px]">local_shipping</span>
                     <p className="font-['Inter'] text-sm text-[#14213D]">
                       {subtotal >= freeShippingThreshold ? (
-                        <>You have unlocked complimentary <span className="font-semibold text-[#14213D]">Insured Insured Express Courier Delivery</span>.</>
+                        <>You have unlocked complimentary <span className="font-semibold text-[#14213D]">Free Express Delivery</span>.</>
                       ) : (
-                        <>You're <strong className="text-black font-semibold">{formatPrice(amountToFreeShipping)}</strong> away from unlocking complimentary <span className="font-semibold text-[#14213D]">Insured Insured Express Courier Delivery</span>.</>
+                        <>You're <strong className="text-black font-semibold">{formatPrice(amountToFreeShipping)}</strong> away from unlocking complimentary <span className="font-semibold text-[#14213D]">Free Express Delivery</span>.</>
                       )}
                     </p>
                   </div>
@@ -350,7 +350,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between items-center text-[#6C757D] text-xs mt-2">
                   <span>{formatPrice(subtotal)} Current</span>
-                  <span className="text-[#14213D] font-medium">Free Insured Courier at ₹999</span>
+                  <span className="text-[#14213D] font-medium">Free Delivery at ₹999</span>
                 </div>
               </div>
 
@@ -387,12 +387,12 @@ export default function CartPage() {
                                 className="w-full h-full object-cover"
                               />
                               <span className="absolute bottom-1 left-1 bg-[#14213D] text-white font-['Montserrat'] text-[8px] font-bold px-1.5 py-0.5 rounded tracking-widest uppercase shadow-sm">
-                                Verified
+                                100% Genuine
                               </span>
                             </div>
                             <div className="flex flex-col min-w-0">
                               <span className="font-['Montserrat'] text-[10px] uppercase tracking-widest text-[#6C757D] font-bold">
-                                {product.category || 'Vault Asset'}
+                                {product.category || 'Product'}
                               </span>
                               <Link
                                 href={`/product/${product.slug || ''}`}
@@ -400,10 +400,10 @@ export default function CartPage() {
                               >
                                 {product.title}
                               </Link>
-                              <p className="font-mono text-xs text-[#6C757D] mt-0.5">SKU: #{variant.sku || 'AV-8842'}</p>
+                              <p className="font-mono text-xs text-[#6C757D] mt-0.5">SKU: #{variant.sku || 'CS-8842'}</p>
                               <div className="flex items-center gap-1.5 mt-1.5">
-                                <span className="inline-block w-2 h-2 rounded-full bg-[#fca311]"></span>
-                                <span className="font-['Inter'] text-xs text-[#14213D] font-semibold">Priority Reserve</span>
+                                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span className="font-['Inter'] text-xs text-[#14213D] font-semibold">In Stock</span>
                               </div>
                             </div>
                           </div>
@@ -411,8 +411,8 @@ export default function CartPage() {
                           {/* Variant Info */}
                           <div className="md:col-span-2 flex flex-col justify-center">
                             <span className="md:hidden font-['Montserrat'] text-[10px] uppercase text-[#6C757D]">Variant:</span>
-                            <span className="font-['Inter'] text-xs font-semibold text-[#14213D]">{variant.title || 'Primary Lot'}</span>
-                            <span className="font-['Inter'] text-[11px] text-[#6C757D]">Allocated Custody</span>
+                            <span className="font-['Inter'] text-xs font-semibold text-[#14213D]">{variant.title || 'Standard'}</span>
+                            <span className="font-['Inter'] text-[11px] text-emerald-600 font-medium">Ready to Ship</span>
                           </div>
 
                           {/* Price */}
@@ -468,10 +468,10 @@ export default function CartPage() {
                             <div className="flex items-center gap-2">
                               <span className="material-symbols-outlined text-[#855300] text-[20px]">warning</span>
                               <p className="font-['Inter'] text-xs">
-                                <strong>Only {stock} left in stock</strong> — vault inventory locks upon checkout completion. Final physical allocation held for your session.
+                                <strong>Only {stock} left in stock</strong> — Order now to secure yours before it sells out!
                               </p>
                             </div>
-                            <span className="font-['Montserrat'] text-[10px] uppercase text-[#855300] font-bold shrink-0">Priority Allocation</span>
+                            <span className="font-['Montserrat'] text-[10px] uppercase text-[#855300] font-bold shrink-0">Limited Stock</span>
                           </div>
                         )}
                       </div>
@@ -486,14 +486,14 @@ export default function CartPage() {
                     className="inline-flex items-center gap-2 font-['Montserrat'] text-xs uppercase tracking-wider text-[#14213D] hover:text-[#855300] transition-colors font-bold"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                    <span>Continue Curated Shopping</span>
+                    <span>Continue Shopping</span>
                   </Link>
                   <button
                     onClick={handleClearCart}
                     className="text-[#6C757D] hover:text-rose-600 font-['Montserrat'] text-xs uppercase tracking-wider transition-colors font-medium"
                     type="button"
                   >
-                    Clear Entire Bag
+                    Clear Entire Cart
                   </button>
                 </div>
               </div>
@@ -503,7 +503,7 @@ export default function CartPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
                     <label className="block font-['Montserrat'] text-xs uppercase tracking-wider text-[#14213D] font-bold mb-2">
-                      Privilege Code or Escrow Voucher
+                      Have a Coupon or Promo Code?
                     </label>
                     <div className="flex items-center gap-2">
                       <div className="relative flex-1">
@@ -513,7 +513,7 @@ export default function CartPage() {
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
-                          placeholder="Enter voucher code (e.g. VAULT10)..."
+                          placeholder="Enter coupon code (e.g. SAVE10)..."
                           className="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FA] rounded-lg text-[#14213D] font-['Inter'] text-xs border border-[#E5E5E5] focus:outline-none focus:bg-white focus:border-[#fca311]"
                         />
                       </div>
@@ -532,12 +532,12 @@ export default function CartPage() {
                   {/* Active Concession Pill */}
                   {activeCoupon && (
                     <div className="flex flex-col md:items-end justify-center">
-                      <span className="font-['Montserrat'] text-[10px] uppercase text-[#6C757D] mb-1">Active Concession</span>
+                      <span className="font-['Montserrat'] text-[10px] uppercase text-[#6C757D] mb-1">Coupon Applied</span>
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#fca311]/20 text-[#14213D] border border-[#fca311]/40">
                         <span className="material-symbols-outlined text-[#855300] text-[18px]">sell</span>
                         <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#14213D]">{activeCoupon.code}</span>
                         <span className="font-['Inter'] text-xs text-[#855300] font-semibold">
-                          ({activeCoupon.discountType === 'PERCENTAGE' ? `-${activeCoupon.discountValue}% Concession` : `-${formatPrice(activeCoupon.discountValue)}`})
+                          ({activeCoupon.discountType === 'PERCENTAGE' ? `-${activeCoupon.discountValue}% Off` : `-${formatPrice(activeCoupon.discountValue)}`})
                         </span>
                         <button
                           type="button"
@@ -557,9 +557,9 @@ export default function CartPage() {
                 <div className="bg-white rounded-xl p-5 border border-[#E5E5E5] shadow-sm flex items-start gap-3">
                   <span className="material-symbols-outlined text-[#fca311] text-[24px] mt-0.5">assignment_return</span>
                   <div>
-                    <h4 className="font-['Montserrat'] text-xs uppercase text-[#14213D] font-bold">30-Day Guaranteed</h4>
+                    <h4 className="font-['Montserrat'] text-xs uppercase text-[#14213D] font-bold">7-Day Easy Returns</h4>
                     <p className="font-['Inter'] text-xs text-[#6C757D] mt-1 leading-snug">
-                      No-question returns on vaulted items with intact hermetic seals.
+                      Hassle-free 7-day replacement or refund policy.
                     </p>
                   </div>
                 </div>
@@ -567,9 +567,9 @@ export default function CartPage() {
                 <div className="bg-white rounded-xl p-5 border border-[#E5E5E5] shadow-sm flex items-start gap-3">
                   <span className="material-symbols-outlined text-[#fca311] text-[24px] mt-0.5">shield_with_heart</span>
                   <div>
-                    <h4 className="font-['Montserrat'] text-xs uppercase text-[#14213D] font-bold">Vault Escrow Hold</h4>
+                    <h4 className="font-['Montserrat'] text-xs uppercase text-[#14213D] font-bold">100% Secure Payments</h4>
                     <p className="font-['Inter'] text-xs text-[#6C757D] mt-1 leading-snug">
-                      Funds protected in escrow until you physically inspect goods.
+                      Encrypted payments with zero transaction risk.
                     </p>
                   </div>
                 </div>
@@ -577,9 +577,9 @@ export default function CartPage() {
                 <div className="bg-white rounded-xl p-5 border border-[#E5E5E5] shadow-sm flex items-start gap-3">
                   <span className="material-symbols-outlined text-[#fca311] text-[24px] mt-0.5">verified</span>
                   <div>
-                    <h4 className="font-['Montserrat'] text-xs uppercase text-[#14213D] font-bold">Authenticity Seal</h4>
+                    <h4 className="font-['Montserrat'] text-xs uppercase text-[#14213D] font-bold">Authentic Products</h4>
                     <p className="font-['Inter'] text-xs text-[#6C757D] mt-1 leading-snug">
-                      Serialized ledger certificate with certified BIS hallmark &amp; assayer serial number.
+                      100% genuine products with manufacturer warranty and GST invoice.
                     </p>
                   </div>
                 </div>
@@ -593,7 +593,7 @@ export default function CartPage() {
                 <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-4">
                   <h2 className="font-['Montserrat'] text-lg text-[#14213D] uppercase tracking-tight font-bold">Order Summary</h2>
                   <span className="font-['Montserrat'] text-[10px] uppercase tracking-wider bg-[#F8F9FA] px-2.5 py-1 rounded-full text-[#6C757D] font-bold border border-[#E5E5E5]">
-                    {items.length} Asset{items.length > 1 ? 's' : ''} ({totalItemsCount} Unit{totalItemsCount > 1 ? 's' : ''})
+                    {items.length} Item{items.length > 1 ? 's' : ''} ({totalItemsCount} Unit{totalItemsCount > 1 ? 's' : ''})
                   </span>
                 </div>
 
@@ -607,7 +607,7 @@ export default function CartPage() {
                   {discountAmount > 0 && (
                     <div className="flex justify-between items-center text-[#855300] font-medium">
                       <span className="flex items-center gap-1">
-                        <span>Privilege Concession</span>
+                        <span>Coupon Discount</span>
                         <span className="font-['Montserrat'] text-[10px] bg-[#fca311]/20 text-[#14213D] px-1.5 py-0.5 rounded font-bold">
                           {activeCoupon?.code}
                         </span>
@@ -618,8 +618,8 @@ export default function CartPage() {
 
                   <div className="flex justify-between items-center text-[#6C757D]">
                     <span className="flex items-center gap-1">
-                      <span>Vault Courier Transit</span>
-                      <span className="material-symbols-outlined text-[#867461] text-[16px]" title="Insured express air logistics">info</span>
+                      <span>Delivery Charges</span>
+                      <span className="material-symbols-outlined text-[#867461] text-[16px]" title="Standard courier delivery">info</span>
                     </span>
                     <span className="text-[#14213D] font-medium font-mono">
                       {shippingFee === 0 ? <span className="text-emerald-700 font-bold">FREE</span> : formatPrice(shippingFee)}
@@ -628,8 +628,8 @@ export default function CartPage() {
 
                   <div className="flex justify-between items-center text-[#6C757D]">
                     <span className="flex items-center gap-1">
-                      <span>GST (Goods &amp; Services Tax 3%)</span>
-                      <span className="material-symbols-outlined text-[#867461] text-[16px]" title="Statutory 3% Goods & Services Tax (GST) applicable on precious investment lots in India">info</span>
+                      <span>GST (Goods &amp; Services Tax)</span>
+                      <span className="material-symbols-outlined text-[#867461] text-[16px]" title="Applicable GST included">info</span>
                     </span>
                     <span className="text-[#14213D] font-medium font-mono">{formatPrice(taxAmount)}</span>
                   </div>
@@ -640,8 +640,8 @@ export default function CartPage() {
                   {/* Grand Total */}
                   <div className="flex justify-between items-baseline pt-1">
                     <div>
-                      <span className="font-['Montserrat'] text-base text-[#14213D] uppercase font-bold tracking-tight">Total Due</span>
-                      <p className="font-mono text-[11px] text-[#6C757D]">INR Currency (₹)</p>
+                      <span className="font-['Montserrat'] text-base text-[#14213D] uppercase font-bold tracking-tight">Total Amount</span>
+                      <p className="font-mono text-[11px] text-[#6C757D]">INR (₹)</p>
                     </div>
                     <div className="text-right">
                       <span className="font-['Montserrat'] text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14213D] font-mono">
@@ -650,7 +650,7 @@ export default function CartPage() {
                     </div>
                   </div>
                   <p className="font-['Inter'] text-xs text-[#6C757D] leading-relaxed">
-                    Includes all applicable vault compliance duties, custodial inspection, and insured transit coverage.
+                    Includes all applicable taxes, GST, and doorstep delivery.
                   </p>
                 </div>
 
@@ -660,7 +660,7 @@ export default function CartPage() {
                     href="/checkout"
                     className="w-full py-4 px-6 rounded-xl bg-[#fca311] hover:bg-[#E08F07] text-[#000000] font-['Montserrat'] text-xs uppercase tracking-wider font-extrabold text-center flex items-center justify-center gap-2 shadow-md transition-all active:translate-y-0.5"
                   >
-                    <span>Proceed to Secure Checkout</span>
+                    <span>Proceed to Checkout</span>
                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                   </Link>
 
@@ -668,7 +668,7 @@ export default function CartPage() {
                   <div className="relative flex items-center justify-center my-1">
                     <div className="w-full h-px bg-[#E5E5E5]"></div>
                     <span className="absolute bg-white px-3 font-['Montserrat'] text-[10px] uppercase tracking-widest text-[#6C757D]">
-                      Or Instant Custody
+                      Or Pay With UPI
                     </span>
                   </div>
 
@@ -694,7 +694,7 @@ export default function CartPage() {
                 {/* Institutional Clearance Seals */}
                 <div className="bg-[#F8F9FA] rounded-lg p-3 border border-[#E5E5E5] flex flex-col gap-2">
                   <div className="flex items-center justify-between text-[#6C757D]">
-                    <span className="font-['Montserrat'] text-[10px] uppercase tracking-wider font-semibold">Institutional Clearance</span>
+                    <span className="font-['Montserrat'] text-[10px] uppercase tracking-wider font-semibold">100% Safe Payments</span>
                     <span className="material-symbols-outlined text-[16px] text-[#14213D]">verified_user</span>
                   </div>
                   <div className="grid grid-cols-4 gap-1.5 items-center opacity-80 pt-1">
@@ -704,21 +704,21 @@ export default function CartPage() {
                     <div className="h-6 bg-white border border-[#E5E5E5] rounded flex items-center justify-center font-mono text-[9px] font-bold text-[#14213D]">256-SSL</div>
                   </div>
                   <p className="font-['Inter'] text-[11px] text-[#6C757D] leading-snug">
-                    Protected by military-grade 256-Bit TLS escrow holding accounts. Assets dispatched via GPS-tracked tamper-evident transit containers.
+                    Protected by 256-bit SSL encryption. All orders are delivered securely across India.
                   </p>
                 </div>
               </div>
 
-              {/* Curatorial Concierge Card */}
+              {/* Support Card */}
               <div className="bg-[#14213D] text-white rounded-xl p-6 shadow-md flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-[#fca311] text-[24px]">support_agent</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#fca311] font-bold">Private Concierge</span>
-                  <p className="font-['Inter'] text-xs text-white/80 mt-0.5">Need customized delivery schedules or bulk bullion allocation? Speak with our Bengaluru concierge desk.</p>
-                  <a href="mailto:support@dropyhub.in" className="font-['Montserrat'] text-[11px] uppercase text-white hover:text-[#fca311] font-semibold mt-2 transition-colors underline">
-                    Initiate Direct Line →
+                  <span className="font-['Montserrat'] text-[11px] uppercase tracking-wider text-[#fca311] font-bold">Need Help?</span>
+                  <p className="font-['Inter'] text-xs text-white/80 mt-0.5">Have questions about your order, delivery or payments? Call 1800-123-9876 or chat with us.</p>
+                  <a href="mailto:support@centershopping.in" className="font-['Montserrat'] text-[11px] uppercase text-white hover:text-[#fca311] font-semibold mt-2 transition-colors underline">
+                    Contact Customer Support →
                   </a>
                 </div>
               </div>

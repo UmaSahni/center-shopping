@@ -38,7 +38,7 @@ export default function HomePage() {
     const list = [{ name: 'All Collections', count: rawProducts.length }];
     const categoryCounts = {};
     rawProducts.forEach((p) => {
-      const cat = p.category || 'Curated Vault';
+      const cat = p.category || 'General';
       categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
     });
     Object.keys(categoryCounts).sort().forEach((cat) => {
@@ -171,17 +171,17 @@ export default function HomePage() {
         <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-text-secondary font-label-caps text-[11px] uppercase tracking-wider">
             <span className="inline-block w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
-            <span>Live Bullion &amp; Vault Valuation Feed: Gold 24K 999 ₹7,240/g (+0.65%) • Silver 999 ₹86,500/kg • BIS Hallmarked</span>
+            <span>Special Offer: Free Delivery on Orders Over ₹499 • 100% Genuine Products • Easy 7-Day Returns</span>
           </div>
           <div className="hidden md:flex items-center gap-4 text-text-muted font-label-caps text-[11px]">
             <span className="flex items-center gap-1 text-text-secondary font-semibold">
               <span className="material-symbols-outlined text-[16px] text-primary">verified</span>
-              BIS Hallmarked &amp; GIA Certified
+              100% Genuine &amp; Quality Verified
             </span>
             <span className="text-slate-300">|</span>
             <span className="flex items-center gap-1 text-text-secondary font-semibold">
               <span className="material-symbols-outlined text-[16px] text-text-secondary">local_shipping</span>
-              Pan-India Insured Armored Logistics
+              Fast Pan-India Express Delivery
             </span>
           </div>
         </div>
@@ -193,30 +193,30 @@ export default function HomePage() {
           <div className="flex flex-col gap-2 z-10 max-w-2xl">
             <div className="flex items-center gap-2">
               <span className="bg-primary-container text-text-primary px-2.5 py-1 rounded font-label-caps text-[10px] uppercase font-bold tracking-widest">
-                Official Custodial Repository
+                Center Shopping Store
               </span>
               <span className="font-label-caps text-[11px] text-secondary-fixed-dim uppercase tracking-wider">
-                Pan-India Insured Dispatch
+                Delivering Across India
               </span>
             </div>
             <h1 className="font-display-hero text-3xl sm:text-4xl lg:text-5xl tracking-tight font-extrabold text-white uppercase leading-tight mt-1">
-              Curated Luxury Assets &amp; Physical Bullion
+              Quality Products &amp; Unbeatable Deals
             </h1>
             <p className="font-inter text-sm sm:text-base text-secondary-fixed-dim max-w-xl mt-2 leading-relaxed">
-              Direct verified inventory of certified 999.9 fine bullion, Swiss-grade automatic timepieces, and natural certified gemstones. Every item is verified with serialized assay certificates, GST compliant invoicing, and insured express delivery across India.
+              Discover verified premium watches, fine jewellery, luxury accessories, and lifestyle essentials. Enjoy authentic products, secure checkout, GST invoices, and fast doorstep delivery.
             </p>
           </div>
 
           <div className="flex items-center gap-4 z-10 shrink-0">
             <div className="bg-[#0d1b36] p-4 rounded-xl flex flex-col items-center min-w-[120px] shadow-sm border border-slate-700/50">
-              <span className="font-label-caps text-[10px] text-secondary-fixed-dim uppercase">Allocated Lots</span>
+              <span className="font-label-caps text-[10px] text-secondary-fixed-dim uppercase">Total Items</span>
               <span className="font-headline-md text-2xl font-bold text-primary-container mt-1">{rawProducts.length || 12}</span>
-              <span className="font-label-caps text-[9px] text-slate-300 uppercase mt-0.5">Verified In Stock</span>
+              <span className="font-label-caps text-[9px] text-slate-300 uppercase mt-0.5">In Stock</span>
             </div>
             <div className="bg-[#0d1b36] p-4 rounded-xl flex flex-col items-center min-w-[120px] shadow-sm border border-slate-700/50">
-              <span className="font-label-caps text-[10px] text-secondary-fixed-dim uppercase">Escrow Settlement</span>
+              <span className="font-label-caps text-[10px] text-secondary-fixed-dim uppercase">Customer Trust</span>
               <span className="font-headline-md text-2xl font-bold text-white mt-1">100%</span>
-              <span className="font-label-caps text-[9px] text-slate-300 uppercase mt-0.5">Insured Transit</span>
+              <span className="font-label-caps text-[9px] text-slate-300 uppercase mt-0.5">Safe &amp; Secure</span>
             </div>
           </div>
 
@@ -326,7 +326,7 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-between lg:justify-end gap-4 w-full lg:w-auto">
             <span className="font-inter text-xs text-text-muted">
               Showing <strong className="text-text-primary font-bold">{filteredProducts.length > 0 ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, filteredProducts.length)}` : '0'}</strong> of{' '}
-              <strong className="text-text-primary font-bold">{filteredProducts.length}</strong> matching assets ({rawProducts.length} total in vault)
+              <strong className="text-text-primary font-bold">{filteredProducts.length}</strong> matching products ({rawProducts.length} total in store)
             </span>
 
             <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
@@ -340,7 +340,7 @@ export default function HomePage() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="bg-transparent border-none font-inter text-xs text-text-secondary font-semibold focus:outline-none cursor-pointer pr-2"
                 >
-                  <option value="curated">Curated Lots • Featured</option>
+                  <option value="curated">Featured Products</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
@@ -389,7 +389,7 @@ export default function HomePage() {
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">filter_alt</span>
                 <h3 className="font-headline-sm text-sm font-bold text-text-secondary uppercase tracking-wider">
-                  Detailed Depository Filters
+                  Filter Products
                 </h3>
               </div>
               <button
@@ -455,12 +455,12 @@ export default function HomePage() {
               {/* Filter Column 2: Keyword / Search */}
               <div className="flex flex-col gap-2">
                 <label className="font-label-caps text-[11px] uppercase font-bold text-text-secondary">
-                  Keyword / Assay Search
+                  Search Products
                 </label>
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search gold, silver, watch, carat..."
+                    placeholder="Search watches, jewellery, accessories..."
                     value={searchFilter}
                     onChange={(e) => {
                       setSearchFilter(e.target.value);
@@ -477,7 +477,7 @@ export default function HomePage() {
               {/* Filter Column 3: Category Selector */}
               <div className="flex flex-col gap-2">
                 <label className="font-label-caps text-[11px] uppercase font-bold text-text-secondary">
-                  Depository Category
+                  Category
                 </label>
                 <select
                   value={selectedCategory}
@@ -502,7 +502,7 @@ export default function HomePage() {
                   className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text-secondary rounded-lg font-label-caps text-[11px] uppercase font-bold transition-colors flex items-center justify-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[16px]">restart_alt</span>
-                  <span>Clear All Parameters</span>
+                  <span>Clear All Filters</span>
                 </button>
               </div>
             </div>
@@ -515,7 +515,7 @@ export default function HomePage() {
 
           {activeFiltersCount === 0 && (
             <span className="text-slate-400 font-normal italic text-xs">
-              None applied (Showing all available vault inventory)
+              None applied (Showing all available products)
             </span>
           )}
 
@@ -649,8 +649,8 @@ export default function HomePage() {
 
         {isError && (
           <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-200 text-red-700">
-            <p className="font-bold text-sm">Failed to connect to Vault depository</p>
-            <p className="text-xs mt-1 text-red-600">{error?.data?.message || 'Depository connection offline'}</p>
+            <p className="font-bold text-sm">Failed to load products</p>
+            <p className="text-xs mt-1 text-red-600">{error?.data?.message || 'Please check your connection or try again.'}</p>
           </div>
         )}
 
@@ -662,17 +662,17 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col gap-1 max-w-md">
               <h3 className="font-headline-sm text-lg font-bold text-text-secondary uppercase tracking-tight">
-                No Vault Allocations Match Your Criteria
+                No Products Match Your Criteria
               </h3>
               <p className="font-inter text-xs text-text-muted leading-relaxed">
-                We could not find any physical assets currently matching your active combination of filters and price specifications.
+                We could not find any products currently matching your active combination of filters and price range.
               </p>
             </div>
             <button
               onClick={resetAllFilters}
               className="mt-2 px-6 py-2.5 bg-primary-container text-text-primary rounded-lg font-label-caps text-[11px] uppercase font-bold hover:bg-accent-hover transition-colors shadow-sm"
             >
-              Reset All Filter Parameters
+              Reset All Filters
             </button>
           </div>
         )}
@@ -765,7 +765,7 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* 6. Institutional Trust & Custodial Guarantee Section */}
+      {/* 6. Institutional Trust & Guarantee Section */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 w-full mt-16">
         <div className="bg-white rounded-2xl border border-hairline p-8 lg:p-10 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex items-start gap-4">
@@ -774,10 +774,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col gap-1">
               <h4 className="font-headline-sm text-[15px] text-text-secondary font-bold uppercase tracking-tight">
-                Hallmarked &amp; Spectrometer Tested
+                100% Genuine &amp; Verified Quality
               </h4>
               <p className="font-inter text-xs text-text-muted leading-relaxed">
-                Every bullion bar, chronometer, and gemstone lot is physically tested, verified by certified assayers, and hallmarked before vault allocation.
+                Every product is tested, certified, and quality-inspected before packaging and shipping to your doorstep.
               </p>
             </div>
           </div>
@@ -788,10 +788,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col gap-1">
               <h4 className="font-headline-sm text-[15px] text-text-secondary font-bold uppercase tracking-tight">
-                Armored Transit Guarantee
+                Fast Pan-India Express Delivery
               </h4>
               <p className="font-inter text-xs text-text-muted leading-relaxed">
-                Direct Sequel or Blue Dart armored courier dispatch with 100% insured transit replacement cover until OTP &amp; signature release.
+                Reliable express courier delivery with live tracking and SMS alerts across 19,000+ pincodes in India.
               </p>
             </div>
           </div>
@@ -802,10 +802,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col gap-1">
               <h4 className="font-headline-sm text-[15px] text-text-secondary font-bold uppercase tracking-tight">
-                100% Secure Escrow Protection
+                100% Safe &amp; Secure Payments
               </h4>
               <p className="font-inter text-xs text-text-muted leading-relaxed">
-                Your funds remain safely deposited in third-party banking escrow until you receive and physically inspect the authenticated delivery.
+                All transactions are processed through encrypted, secure payment gateways with complete 7-day buyer protection.
               </p>
             </div>
           </div>
@@ -819,14 +819,14 @@ export default function HomePage() {
             {/* Brand column */}
             <div className="col-span-12 lg:col-span-5 pr-0 lg:pr-8">
               <div className="flex items-center mb-4">
-                <img src="/logo.png" alt="Dropyhub Logo" className="h-16 w-auto max-h-16 object-contain" />
+                <img src="/logo.png" alt="Center Shopping Logo" className="h-16 w-auto max-h-16 object-contain" />
               </div>
               <p className="font-inter text-xs text-secondary-fixed-dim mb-6 max-w-md leading-relaxed">
-                India's premier depository for investment-grade bullion, certified high-horology, and rare numismatics with verifiable authenticity and pan-India insured transit.
+                Center Shopping - India's trusted online store for certified watches, fine jewellery, lifestyle accessories, and daily essentials with pan-India delivery.
               </p>
               <div className="flex flex-col gap-2 max-w-md">
                 <span className="font-label-caps text-[11px] text-primary-container uppercase font-bold">
-                  Private Client Dispatch
+                  Get Exclusive Deals &amp; Offers
                 </span>
                 <div className="flex items-center gap-2">
                   <input
@@ -844,75 +844,75 @@ export default function HomePage() {
             {/* Links Columns */}
             <div className="col-span-12 sm:col-span-4 lg:col-span-2 flex flex-col gap-2.5">
               <h4 className="font-label-caps text-[11px] uppercase text-primary-container tracking-wider mb-1">
-                Vault Collections
+                Categories
               </h4>
-              <button onClick={() => { setSelectedCategory('Vault Fine Metals'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Gold Bullion Bars
-              </button>
-              <button onClick={() => { setSelectedCategory('Sovereign Numismatics'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Sovereign Coinage
-              </button>
-              <button onClick={() => { setSelectedCategory('Haute Horlogerie'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Vintage Chronometers
-              </button>
-              <button onClick={() => { setSelectedCategory('Investment Diamonds'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Investment Diamonds
-              </button>
               <button onClick={() => { setSelectedCategory('All Collections'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                All Collections
+                All Products
+              </button>
+              <button onClick={() => { setSelectedCategory('Watches'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                Watches &amp; Timepieces
+              </button>
+              <button onClick={() => { setSelectedCategory('Jewelry'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                Gold &amp; Jewellery
+              </button>
+              <button onClick={() => { setSelectedCategory('Electronics'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                Electronics &amp; Gadgets
+              </button>
+              <button onClick={() => { setSelectedCategory('Fashion'); }} className="text-left font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                Fashion &amp; Accessories
               </button>
             </div>
 
             <div className="col-span-12 sm:col-span-4 lg:col-span-2 flex flex-col gap-2.5">
               <h4 className="font-label-caps text-[11px] uppercase text-primary-container tracking-wider mb-1">
-                Custody &amp; Trust
+                Customer Care
               </h4>
+              <Link href="/orders" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                Track My Order
+              </Link>
+              <Link href="/cart" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                My Shopping Cart
+              </Link>
+              <Link href="/account" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
+                My Account
+              </Link>
               <a href="#" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Physical Auditing
+                Returns &amp; Refunds
               </a>
               <a href="#" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Armored Transit
-              </a>
-              <a href="#" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Escrow Protocol
-              </a>
-              <a href="#" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Tax &amp; Jurisdiction
-              </a>
-              <a href="#" className="font-inter text-xs text-slate-300 hover:text-white transition-colors">
-                Provenance Verification
+                Shipping Policy
               </a>
             </div>
 
             <div className="col-span-12 sm:col-span-4 lg:col-span-3 flex flex-col gap-3">
               <h4 className="font-label-caps text-[11px] uppercase text-primary-container tracking-wider mb-1">
-                Security Compliance
+                Trust &amp; Security
               </h4>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 p-2 bg-[#0d1b36] border border-slate-700/50 rounded-lg">
                   <span className="material-symbols-outlined text-primary-container text-[20px]">verified_user</span>
                   <div>
-                    <div className="font-inter text-xs font-bold text-white">GST Registered Depository</div>
+                    <div className="font-inter text-xs font-bold text-white">GST Invoicing Available</div>
                     <div className="font-label-caps text-[9px] text-secondary-fixed-dim uppercase">GSTIN: 29AAACD1234E1Z5</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-[#0d1b36] border border-slate-700/50 rounded-lg">
                   <span className="material-symbols-outlined text-primary-container text-[20px]">security</span>
                   <div>
-                    <div className="font-inter text-xs font-bold text-white">BIS Certified Partner</div>
-                    <div className="font-label-caps text-[9px] text-secondary-fixed-dim uppercase">License: HM/C-56789</div>
+                    <div className="font-inter text-xs font-bold text-white">100% Genuine Products</div>
+                    <div className="font-label-caps text-[9px] text-secondary-fixed-dim uppercase">Authorized Retailer</div>
                   </div>
                 </div>
               </div>
               <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                 <div className="px-2 py-1 bg-[#0d1b36] rounded text-[10px] font-label-caps text-secondary-fixed-dim uppercase border border-slate-800">
-                  BHIM UPI
+                  UPI / GPay / PhonePe
                 </div>
                 <div className="px-2 py-1 bg-[#0d1b36] rounded text-[10px] font-label-caps text-secondary-fixed-dim uppercase border border-slate-800">
-                  RuPay / Visa / MC
+                  Credit / Debit Cards
                 </div>
                 <div className="px-2 py-1 bg-[#0d1b36] rounded text-[10px] font-label-caps text-secondary-fixed-dim uppercase border border-slate-800">
-                  NetBanking / NEFT
+                  Cash on Delivery (COD)
                 </div>
               </div>
             </div>
@@ -920,12 +920,12 @@ export default function HomePage() {
 
           <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="font-inter text-xs text-secondary-fixed-dim">
-              © 2024-2025 Dropyhub Depository India Pvt. Ltd. (Bengaluru &amp; Mumbai). All rights reserved.
+              © 2024-2025 Center Shopping India Pvt. Ltd. All rights reserved.
             </p>
             <div className="flex items-center gap-6 font-inter text-xs text-secondary-fixed-dim">
-              <a href="#" className="hover:text-white transition-colors">Privacy Charter</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Custody</a>
-              <a href="#" className="hover:text-white transition-colors">AML &amp; KYC Standards</a>
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-white transition-colors">Customer Support</a>
             </div>
           </div>
         </div>

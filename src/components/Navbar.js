@@ -52,19 +52,19 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
             <span className="font-medium">
-              Free Express Delivery on Orders Over ₹999 • 100% Secure Escrow Protection Guarantee
+              Free Delivery on Orders Over ₹499 • 100% Safe &amp; Secure Shopping Guarantee
             </span>
           </div>
           <div className="hidden lg:flex items-center gap-4 text-slate-300">
             <span>Customer Care: 1800-123-9876</span>
             <span className="text-slate-600">|</span>
             <Link href="/orders" className="hover:text-amber-400 transition-colors">
-              Track Consignment
+              Track Order
             </Link>
             <span className="text-slate-600">|</span>
             <div className="flex items-center gap-1 text-amber-400 font-semibold">
               <span className="material-symbols-outlined text-[14px]">verified</span>
-              <span>Escrow Certified</span>
+              <span>100% Authentic</span>
             </div>
           </div>
         </div>
@@ -88,7 +88,7 @@ export default function Navbar() {
             <form onSubmit={handleSearch} className="w-full">
               <div className="relative flex items-center bg-[#F8FAFC] border border-slate-200 hover:border-slate-300 focus-within:border-amber-500 rounded-xl px-2 py-1 transition-all">
                 <div className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-lg text-slate-700 font-medium text-xs border border-slate-200/80 shadow-xs cursor-pointer select-none">
-                  <span className="text-[11px] font-bold uppercase text-slate-800">All Vaults</span>
+                  <span className="text-[11px] font-bold uppercase text-slate-800">All Categories</span>
                   <span className="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
                 </div>
                 <div className="h-5 w-px bg-slate-200 mx-2"></div>
@@ -97,7 +97,7 @@ export default function Navbar() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search authenticated bullion, timepieces, numismatics..."
+                  placeholder="Search for products, brands and more..."
                   className="w-full bg-transparent border-none text-slate-800 text-xs px-2.5 py-1.5 focus:outline-none placeholder:text-slate-400"
                 />
                 <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 bg-slate-200/60 rounded text-[10px] font-mono text-slate-500 font-semibold mr-1">
@@ -114,7 +114,7 @@ export default function Navbar() {
             <Link
               href="/orders"
               className="relative p-2 text-slate-700 hover:text-amber-600 transition-colors flex items-center"
-              title="Saved Vault Reserves"
+              title="Wishlist"
             >
               <span className="material-symbols-outlined text-[22px]">bookmark</span>
             </Link>
@@ -123,7 +123,7 @@ export default function Navbar() {
             <Link
               href="/cart"
               className="relative p-2 text-slate-700 hover:text-amber-600 transition-colors flex items-center"
-              title="Custodial Allocation Cart"
+              title="Shopping Cart"
             >
               <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
               {mounted && totalItems > 0 && (
@@ -143,9 +143,9 @@ export default function Navbar() {
                   className="flex items-center gap-3 p-1 rounded-full hover:bg-slate-50 transition-all text-left"
                 >
                   <div className="flex flex-col items-end hidden sm:block">
-                    <span className="font-label-caps text-[9px] text-slate-400 uppercase tracking-wider">Tier Status</span>
+                    <span className="font-label-caps text-[9px] text-slate-400 uppercase tracking-wider">Account</span>
                     <span className="font-label-caps text-[10px] text-amber-700 uppercase font-bold bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded">
-                      {user?.role === 'ADMIN' ? 'Admin Officer' : 'Gold Member'}
+                      {user?.role === 'ADMIN' ? 'Admin' : user?.role === 'SALES_AGENT' ? 'Sales Agent' : 'Customer'}
                     </span>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-xs shadow-sm">
@@ -170,7 +170,7 @@ export default function Navbar() {
                       onClick={() => setDropdownOpen(false)}
                     >
                       <span className="material-symbols-outlined text-lg text-slate-500">receipt_long</span>
-                      Order History & Vault Records
+                      My Orders
                     </Link>
 
                     <Link
@@ -179,7 +179,7 @@ export default function Navbar() {
                       onClick={() => setDropdownOpen(false)}
                     >
                       <span className="material-symbols-outlined text-lg text-slate-500">manage_accounts</span>
-                      Client Dossier & Security
+                      My Account &amp; Profile
                     </Link>
 
                     {user?.role === 'ADMIN' && (
@@ -189,7 +189,7 @@ export default function Navbar() {
                         onClick={() => setDropdownOpen(false)}
                       >
                         <span className="material-symbols-outlined text-lg text-amber-600">admin_panel_settings</span>
-                        Platform Admin Console
+                        Admin Dashboard
                       </Link>
                     )}
 
@@ -228,7 +228,7 @@ export default function Navbar() {
                   href="/register"
                   className="px-4 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 uppercase tracking-wider rounded-lg shadow-sm transition-all"
                 >
-                  Open Vault
+                  Register
                 </Link>
               </div>
             ) : null}
@@ -240,40 +240,40 @@ export default function Navbar() {
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between py-1">
             <nav className="flex items-center gap-1 overflow-x-auto py-1 scrollbar-none font-montserrat text-xs font-bold uppercase tracking-wider">
               <Link
-                href="/products?cat=Bullion"
+                href="/products"
                 className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
               >
-                Fine Bullion
+                All Products
               </Link>
               <Link
                 href="/products?cat=Horology"
                 className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
               >
-                Haute Horlogerie
+                Watches &amp; Timepieces
+              </Link>
+              <Link
+                href="/products?cat=Bullion"
+                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
+              >
+                Fine Jewellery &amp; Gold
               </Link>
               <Link
                 href="/products?cat=Coins"
                 className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
               >
-                Rare Minerals
+                Gemstones &amp; Coins
               </Link>
               <Link
-                href="/products"
+                href="/products?cat=Leather"
                 className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
               >
-                Private Auctions
-              </Link>
-              <Link
-                href="/products"
-                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
-              >
-                Vault Custody
+                Leather &amp; Accessories
               </Link>
             </nav>
 
-            <div className="hidden lg:flex items-center gap-2 text-slate-400 font-label-caps text-[10px] uppercase tracking-wider font-semibold">
-              <span className="material-symbols-outlined text-[14px] text-amber-600">lock</span>
-              <span>Zurich • London • Singapore Vaults</span>
+            <div className="hidden lg:flex items-center gap-2 text-slate-500 font-label-caps text-[10px] uppercase tracking-wider font-semibold">
+              <span className="material-symbols-outlined text-[14px] text-amber-600">local_shipping</span>
+              <span>Pan-India Fast Delivery • COD Available</span>
             </div>
           </div>
         </div>

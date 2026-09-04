@@ -27,6 +27,7 @@ export const PRODUCT_IMAGE_MAP = {
   'Natural Colombian Emerald 2.4ct': 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
   '3.01ct Round Brilliant Diamond (D/VVS1)': 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80',
   'Chronograph Obsidian V4 Automatic': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+  'Titanium Dual-Time Edition': 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80',
   'Titanium Dual-Time Vault Edition': 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80',
   'Astronomer Perpetual Rose Gold': 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
   'Monogram Heritage Leather Briefcase': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',

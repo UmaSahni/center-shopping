@@ -53,31 +53,31 @@ export default function LoginPage() {
         <div className="hidden lg:flex lg:col-span-5 bg-text-secondary text-white p-8 flex-col justify-between relative overflow-hidden">
           <div className="z-10 flex flex-col gap-3">
             <div className="flex items-center mb-2">
-              <img src="/logo.png" alt="Dropyhub Logo" className="h-20 w-auto max-h-20 object-contain" />
+              <img src="/logo.png" alt="Center Shopping Logo" className="h-20 w-auto max-h-20 object-contain" />
             </div>
             <span className="font-label-caps text-[9px] uppercase tracking-widest text-primary-container font-bold mt-2">
-              The Sovereign Archive
+              Center Shopping
             </span>
             <h2 className="font-headline-md text-2xl font-extrabold leading-tight text-white uppercase">
-              Curated Custody &amp; Verified Title
+              Quality Products &amp; Great Deals
             </h2>
             <p className="text-xs text-secondary-fixed-dim mt-2 leading-relaxed">
-              Institutional security protocols for physical bullion allocations, rare numismatics, and bonded vault reserves.
+              Sign in to manage your orders, track deliveries in real time, and enjoy safe, verified shopping across India.
             </p>
           </div>
 
           <div className="z-10 flex flex-col gap-3 border-t border-slate-800 pt-6">
             <div className="flex items-center gap-2 text-xs text-slate-300">
               <span className="material-symbols-outlined text-[16px] text-primary-container">shield_check</span>
-              <span>100% Insured Depository Transit</span>
+              <span>100% Safe &amp; Secure Payments</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-300">
               <span className="material-symbols-outlined text-[16px] text-primary-container">verified</span>
-              <span>256-Bit Escrow Concurrency</span>
+              <span>100% Genuine Products</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-300">
               <span className="material-symbols-outlined text-[16px] text-primary-container">local_shipping</span>
-              <span>Armored Courier Transit</span>
+              <span>Fast &amp; Reliable Delivery</span>
             </div>
           </div>
 
@@ -89,13 +89,13 @@ export default function LoginPage() {
           <div>
             <div className="mb-6">
               <span className="font-label-caps text-[10px] uppercase tracking-widest text-primary font-bold">
-                Secure Client Portal
+                Welcome Back
               </span>
               <h1 className="font-headline-md text-2xl font-extrabold text-text-secondary uppercase tracking-tight mt-1">
-                Sign In to Vault
+                Sign In
               </h1>
               <p className="text-xs text-text-muted mt-1">
-                Enter your registered credentials to access your depository portfolio.
+                Enter your email address and password to access your account.
               </p>
             </div>
 
@@ -109,7 +109,7 @@ export default function LoginPage() {
             {/* Quick Demo Customer Helper */}
             <div className="mb-6 p-3.5 rounded-xl bg-surface-subtle border border-hairline">
               <span className="font-label-caps text-[9px] uppercase tracking-wider text-text-secondary font-bold block mb-2">
-                ⚡ Quick Demonstration Access:
+                ⚡ Quick Demo Login:
               </span>
               <button
                 type="button"
@@ -117,7 +117,7 @@ export default function LoginPage() {
                 className="w-full px-3 py-2 rounded-lg bg-white border border-hairline hover:border-primary-container text-xs font-label-caps uppercase font-bold text-text-secondary shadow-2xs transition flex items-center justify-center gap-2 hover:bg-slate-50"
               >
                 <span className="material-symbols-outlined text-[16px] text-primary">person</span>
-                <span>Customer (John Vault Collector)</span>
+                <span>Customer (John Doe)</span>
               </button>
             </div>
 
@@ -125,14 +125,14 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1">
-                  Institutional Email
+                  Email Address
                 </label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@institution.com"
+                  placeholder="name@example.com"
                   className="w-full bg-surface-subtle border border-hairline px-3.5 py-2.5 rounded-lg text-xs font-inter focus:outline-none focus:border-text-secondary transition"
                 />
               </div>
@@ -140,10 +140,10 @@ export default function LoginPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-label-caps text-[10px] uppercase text-text-secondary font-bold">
-                    Vault Passcode
+                    Password
                   </label>
                   <a href="#" className="font-inter text-[11px] text-text-muted hover:text-text-secondary">
-                    Forgot Key?
+                    Forgot Password?
                   </a>
                 </div>
                 <input
@@ -161,22 +161,22 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="w-full bg-primary-container text-text-primary py-3 rounded-lg font-label-caps text-xs uppercase font-bold tracking-wider hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 mt-2"
               >
-                <span>{isLoading ? 'Verifying Credentials...' : 'Authenticate & Enter Vault'}</span>
+                <span>{isLoading ? 'Signing In...' : 'Sign In'}</span>
                 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
               </button>
             </form>
 
             <div className="mt-6 text-center text-xs text-text-muted">
-              <span>Do not possess custodial credentials? </span>
+              <span>Don't have an account? </span>
               <Link href="/register" className="font-label-caps text-xs uppercase font-bold text-text-secondary hover:text-primary ml-1">
-                Register Consignment Account
+                Create Account
               </Link>
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-100 text-center text-xs text-text-muted">
-              <span>Staff or Depository Officer? </span>
+              <span>Staff or Admin? </span>
               <Link href="/admin" className="font-label-caps text-xs uppercase font-bold text-amber-600 hover:underline ml-1">
-                Access Admin Console →
+                Admin Login →
               </Link>
             </div>
 
@@ -190,12 +190,12 @@ export default function LoginPage() {
             <span>•</span>
             <span className="flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px] text-primary">verified</span>
-              ISO 27001 Certified
+              ISO Certified
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px] text-text-secondary">shield</span>
-              Tier 4 Depository
+              100% Safe Payments
             </span>
           </div>
         </div>

@@ -37,7 +37,7 @@ export default function CheckoutPage() {
   };
 
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: user?.name || 'John Vault Collector',
+    fullName: user?.name || 'Rahul Sharma',
     address: 'Flat 402, Prestige Tech Park, Outer Ring Road',
     city: 'Bengaluru',
     state: 'Karnataka',
@@ -45,7 +45,7 @@ export default function CheckoutPage() {
     country: 'India',
   });
 
-  const [transitMethod, setTransitMethod] = useState('armored_courier');
+  const [transitMethod, setTransitMethod] = useState('express_courier');
   const [paymentMethod, setPaymentMethod] = useState('CREDIT_CARD');
 
   const cart = cartData?.data || cartData || null;
@@ -103,7 +103,7 @@ export default function CheckoutPage() {
           variantId: it.variantId || it.variant?.id,
           quantity: it.quantity,
         })),
-        shippingAddress: `${shippingAddress.fullName}, ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}, ${shippingAddress.country} (Delivery: ${transitMethod === 'armored_courier' ? 'Express Courier' : 'Depository Hand-off'})`,
+        shippingAddress: `${shippingAddress.fullName}, ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}, ${shippingAddress.country} (Delivery: ${transitMethod === 'express_courier' ? 'Express Courier Delivery' : 'Store Pick-up'})`,
         paymentMethod,
         couponCode: activeCoupon ? activeCoupon.code : undefined,
         idempotencyKey: 'IDEMP-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9),
@@ -320,21 +320,21 @@ export default function CheckoutPage() {
                 <span className="font-label-caps text-[10px] uppercase text-text-secondary font-bold">
                   Select Delivery Option
                 </span>
-                <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition ${transitMethod === 'armored_courier' ? 'border-[#fca311] bg-amber-50/50' : 'border-hairline bg-surface-subtle'}`}>
+                <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition ${transitMethod === 'express_courier' ? 'border-[#fca311] bg-amber-50/50' : 'border-hairline bg-surface-subtle'}`}>
                   <div className="flex items-center gap-3">
                     <input
                       type="radio"
                       name="transit"
-                      checked={transitMethod === 'armored_courier'}
-                      onChange={() => setTransitMethod('armored_courier')}
+                      checked={transitMethod === 'express_courier'}
+                      onChange={() => setTransitMethod('express_courier')}
                       className="accent-[#fca311] cursor-pointer"
                     />
                     <div>
                       <div className="font-headline-sm text-xs font-bold text-text-secondary uppercase">
-                        Express Insured Courier Delivery
+                        Express Doorstep Delivery
                       </div>
                       <div className="font-inter text-[11px] text-text-muted">
-                        Blue Dart / Sequel armored express transit with 100% replacement insurance until OTP verification
+                        Fast delivery across India via Blue Dart / Delhivery with SMS &amp; OTP tracking
                       </div>
                     </div>
                   </div>
@@ -343,26 +343,26 @@ export default function CheckoutPage() {
                   </span>
                 </label>
 
-                <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition ${transitMethod === 'depository_handoff' ? 'border-[#fca311] bg-amber-50/50' : 'border-hairline bg-surface-subtle'}`}>
+                <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition ${transitMethod === 'store_pickup' ? 'border-[#fca311] bg-amber-50/50' : 'border-hairline bg-surface-subtle'}`}>
                   <div className="flex items-center gap-3">
                     <input
                       type="radio"
                       name="transit"
-                      checked={transitMethod === 'depository_handoff'}
-                      onChange={() => setTransitMethod('depository_handoff')}
+                      checked={transitMethod === 'store_pickup'}
+                      onChange={() => setTransitMethod('store_pickup')}
                       className="accent-[#fca311] cursor-pointer"
                     />
                     <div>
                       <div className="font-headline-sm text-xs font-bold text-text-secondary uppercase">
-                        Depository Vault Pick-up
+                        Center Shopping Store Pick-up
                       </div>
                       <div className="font-inter text-[11px] text-text-muted">
-                        Private depository viewing room collection at Bengaluru or Mumbai Vault
+                        Direct store pickup from our local retail hub in your city
                       </div>
                     </div>
                   </div>
-                  <span className="font-label-caps text-[10px] uppercase text-text-muted font-bold">
-                    By Appointment
+                  <span className="font-label-caps text-[10px] uppercase text-emerald-600 font-bold">
+                    FREE
                   </span>
                 </label>
               </div>
@@ -474,7 +474,7 @@ export default function CheckoutPage() {
                             )}
                           </div>
                           <div className="truncate">
-                            <p className="font-bold text-text-secondary truncate">{prod?.title || 'Vault Item'}</p>
+                            <p className="font-bold text-text-secondary truncate">{prod?.title || 'Product Item'}</p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] text-text-muted">Qty: {qty}</span>
                               {isOutOfStock && (

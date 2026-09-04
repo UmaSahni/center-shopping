@@ -7,10 +7,10 @@ import { useDispatch } from 'react-redux';
 import { X, Loader2 } from 'lucide-react';
 
 const REASONS = [
-  { id: 'mistake', label: 'Ordered by mistake / Change of mind', badge: 'Fast-Track', desc: 'Full instant reversal to original settlement method with no secondary review delays.' },
-  { id: 'timeline', label: 'Delivery transit timeline too long', badge: 'Logistics', desc: 'Estimated armored logistics transit under sealed vault protocols.' },
-  { id: 'market', label: 'Found alternative asset / price fluctuation in bullion', badge: 'Market', desc: 'Sovereign spot price reassessment or reallocating liquidity.' },
-  { id: 'address', label: 'Need to alter delivery address / custody agent instruction', badge: 'Routing', desc: 'Update consignee registration before final courier dispatch.' },
+  { id: 'mistake', label: 'Ordered by mistake / Changed my mind', badge: 'Quick Refund', desc: 'Instant refund initiated back to your original payment method.' },
+  { id: 'timeline', label: 'Delivery time is too long', badge: 'Shipping', desc: 'Need the item sooner than current estimated delivery date.' },
+  { id: 'price', label: 'Found a better price / deal elsewhere', badge: 'Price', desc: 'Found another alternative or special discount.' },
+  { id: 'address', label: 'Want to change delivery address or phone number', badge: 'Address', desc: 'Need to modify delivery location or recipient details.' },
 ];
 
 export default function CancelOrderModal({ orderId, onClose }) {
@@ -26,10 +26,10 @@ export default function CancelOrderModal({ orderId, onClose }) {
         reason: `${selectedReason}${notes ? ': ' + notes : ''}`,
       }).unwrap();
 
-      dispatch(showToast({ type: 'success', message: 'Custody consignment voided. Escrow funds released.' }));
+      dispatch(showToast({ type: 'success', message: 'Order cancelled successfully. Refund initiated.' }));
       onClose();
     } catch (err) {
-      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to cancel consignment order' }));
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to cancel order' }));
     }
   };
 
@@ -40,14 +40,14 @@ export default function CancelOrderModal({ orderId, onClose }) {
         <div className="p-6 pb-4 border-b border-[#E5E5E5] flex items-center justify-between bg-[#F8F9FA]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#14213D] text-[#fca311] flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[24px]">fact_check</span>
+              <span className="material-symbols-outlined text-[24px]">cancel</span>
             </div>
             <div>
               <span className="font-['Montserrat'] text-[10px] uppercase tracking-widest text-[#855300] font-bold">
-                Mandatory Custody Audit
+                Order Support
               </span>
               <h3 className="font-['Montserrat'] font-bold text-lg text-[#14213D] uppercase tracking-tight">
-                Cancel Consignment Order
+                Cancel Order
               </h3>
             </div>
           </div>
@@ -70,14 +70,14 @@ export default function CancelOrderModal({ orderId, onClose }) {
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h4 className="font-['Montserrat'] text-xs uppercase font-bold text-emerald-900">
-                    Eligible for Immediate Full Refund
+                    Eligible for Full Refund
                   </h4>
                   <span className="px-2 py-0.5 rounded text-[9px] font-['Montserrat'] uppercase bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
                     100% Guaranteed
                   </span>
                 </div>
                 <p className="text-xs text-emerald-800/90 mt-1 leading-relaxed">
-                  This order is currently in <strong className="font-semibold">Processing &amp; Custody Allocation</strong> (Prior to Armored Dispatch). Your vault escrow hold can be released immediately with zero restocking deductions.
+                  Your order is currently processing and hasn't been shipped yet. Your payment will be refunded immediately with zero cancellation charges.
                 </p>
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function CancelOrderModal({ orderId, onClose }) {
           {/* Reason Selector */}
           <div>
             <label className="block font-['Montserrat'] text-xs font-bold text-[#14213D] uppercase tracking-wider mb-2.5">
-              Select Reason for Custody Release
+              Select Reason for Cancellation
             </label>
             <div className="space-y-2">
               {REASONS.map((r) => {
@@ -130,13 +130,13 @@ export default function CancelOrderModal({ orderId, onClose }) {
           {/* Additional Notes */}
           <div>
             <label className="block font-['Montserrat'] text-xs font-bold text-[#14213D] uppercase tracking-wider mb-2">
-              Additional Custodial Notes (Optional)
+              Additional Feedback (Optional)
             </label>
             <textarea
               rows="2"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Provide any specific instruction for your consignment officer..."
+              placeholder="Please let us know how we can improve..."
               className="w-full p-3 bg-[#F8F9FA] border border-[#E5E5E5] rounded-xl text-xs text-[#14213D] focus:outline-none focus:border-[#fca311] focus:bg-white transition"
             />
           </div>
@@ -145,15 +145,15 @@ export default function CancelOrderModal({ orderId, onClose }) {
           <div className="pt-2 border-t border-[#E5E5E5] flex items-center justify-between text-xs text-[#6C757D]">
             <span className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px] text-[#855300]">lock_reset</span>
-              Zero Restocking Fee
+              Zero Cancellation Fee
             </span>
             <span className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px] text-[#855300]">bolt</span>
-              Instant Reversal
+              Fast Refund
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px] text-[#855300]">inventory</span>
-              Inventory Restored
+              <span className="material-symbols-outlined text-[16px] text-[#855300]">support_agent</span>
+              24/7 Support
             </span>
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function CancelOrderModal({ orderId, onClose }) {
             disabled={isLoading}
             className="px-5 py-2.5 rounded-xl font-['Montserrat'] text-xs font-bold uppercase tracking-wider text-[#14213D] hover:bg-slate-200/60 transition"
           >
-            Keep Order Active
+            Don't Cancel
           </button>
           <button
             onClick={handleConfirmCancel}
@@ -173,7 +173,7 @@ export default function CancelOrderModal({ orderId, onClose }) {
             className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-['Montserrat'] text-xs font-bold uppercase tracking-wider shadow-md transition flex items-center gap-2 disabled:opacity-50"
           >
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            <span>Confirm Custody Release &amp; Void</span>
+            <span>Cancel Order</span>
           </button>
         </div>
       </div>
