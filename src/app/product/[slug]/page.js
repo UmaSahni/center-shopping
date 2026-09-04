@@ -132,8 +132,8 @@ export default function ProductDetailPage() {
                 <span className="bg-text-secondary text-white font-label-caps text-[10px] px-2.5 py-1 rounded uppercase shadow-sm">
                   Featured Item
                 </span>
-                <span className="bg-primary-container text-text-primary font-label-caps text-[10px] px-2.5 py-1 rounded uppercase font-bold shadow-sm">
-                  SKU #CS-{String(product.id).padStart(3, '0')}
+                <span className="bg-primary-container text-text-primary font-label-caps text-[10px] px-2.5 py-1 rounded uppercase font-bold shadow-sm font-mono">
+                  SKU: {selectedVariant?.sku || `CS-${String(product.id).slice(0, 8).toUpperCase()}`}
                 </span>
               </div>
               <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
