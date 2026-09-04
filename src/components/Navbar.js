@@ -74,17 +74,14 @@ export default function Navbar() {
       <header className="w-full bg-white shadow-[0_1px_8px_rgba(20,33,61,0.06)]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-3.5 flex items-center justify-between gap-6">
           {/* Brand / Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="Dropyhub" className="h-9 w-auto object-contain rounded" />
-            <div className="flex flex-col">
-              <span className="font-montserrat text-lg font-bold tracking-tight text-[#14213D] uppercase leading-none">
-                Dropyhub
-              </span>
-              <span className="font-label-caps text-[9px] tracking-widest text-slate-400 uppercase font-bold mt-1">
-                Rare • Provenance
-              </span>
-            </div>
+          <Link href="/" className="flex items-center group py-0.5">
+            <img
+              src="/logo.png"
+              alt="Center Shopping"
+              className="h-12 sm:h-14 w-auto max-h-14 object-contain transition-transform duration-200 group-hover:scale-105"
+            />
           </Link>
+
 
           {/* Global Search Bar */}
           <div className="hidden md:flex flex-1 max-w-2xl mx-4">
