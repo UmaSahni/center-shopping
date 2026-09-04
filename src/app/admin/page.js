@@ -1271,14 +1271,16 @@ export default function AdminConsolePage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               {order.items?.map((item, idx) => {
-                                const img = getProductImage(item.product?.title);
+                                const title = item.variant?.product?.title || item.productTitle || item.product?.title || 'Product';
+                                const img = item.variant?.product?.imageUrl || item.imageUrl || getProductImage(title);
+                                const variantName = item.variantTitle || item.variant?.title || 'Standard';
                                 return (
                                   <img
                                     key={idx}
                                     src={img}
-                                    alt="Product"
-                                    title={item.product?.title}
-                                    className="w-9 h-9 rounded-lg object-cover border border-slate-200 bg-white"
+                                    alt={title}
+                                    title={`${title} (${variantName})`}
+                                    className="w-9 h-9 rounded-lg object-cover border border-slate-200 bg-white shadow-xs"
                                   />
                                 );
                               })}
