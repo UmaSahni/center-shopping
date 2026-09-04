@@ -11,6 +11,7 @@ function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParam = searchParams.get('q') || '';
+  const catParam = searchParams.get('category') || searchParams.get('cat') || '';
   const parseCatParam = (param) => {
     if (!param || param === 'all') return [];
     return param.split(',').map((c) => c.trim()).filter(Boolean);
