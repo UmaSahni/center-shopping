@@ -40,15 +40,16 @@ function SearchResultsContent() {
 
   const toggleCategory = (cat) => {
     setPage(1);
-    setSelectedCategories((prev) => {
-      const next = prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat];
-      const params = new URLSearchParams();
-      if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
-      if (next.length > 0) params.set('category', next.join(','));
-      const qs = params.toString();
-      router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
-      return next;
-    });
+    const next = selectedCategories.includes(cat)
+      ? selectedCategories.filter((c) => c !== cat)
+      : [...selectedCategories, cat];
+    setSelectedCategories(next);
+
+    const params = new URLSearchParams();
+    if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
+    if (next.length > 0) params.set('category', next.join(','));
+    const qs = params.toString();
+    router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
   };
 
   const toggleAllCategories = () => {
@@ -202,7 +203,6 @@ function SearchResultsContent() {
               <div className="space-y-1.5">
                 {/* All Categories checkbox option */}
                 <label
-                  onClick={toggleAllCategories}
                   className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all text-xs select-none border ${
                     selectedCategories.length === 0
                       ? 'bg-amber-500/10 border-amber-500/40 text-slate-900 font-bold shadow-xs'
@@ -213,7 +213,7 @@ function SearchResultsContent() {
                     <input
                       type="checkbox"
                       checked={selectedCategories.length === 0}
-                      onChange={toggleAllCategories}
+                      onChange={() => toggleAllCategories()}
                       className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                     />
                     <span>All Categories</span>
@@ -229,7 +229,6 @@ function SearchResultsContent() {
                   return (
                     <label
                       key={idx}
-                      onClick={() => toggleCategory(cat)}
                       className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all text-xs select-none border ${
                         isChecked
                           ? 'bg-amber-500/10 border-amber-500 text-slate-950 font-bold shadow-xs'
