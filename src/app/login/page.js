@@ -23,16 +23,17 @@ export default function LoginPage() {
 
     try {
       const res = await loginMutation({ email, password }).unwrap();
+
+      // Enforce: Only customers can sign in through the customer storefront login
+      if (res.data.user.role === 'ADMIN' || res.data.user.role === 'SALES_AGENT') {
+        setErrorMsg('Staff accounts (Administrator / Sales Agent) must sign in via the Admin Console at /admin.');
+        dispatch(showToast({ type: 'error', message: 'Staff accounts must sign in via /admin' }));
+        return;
+      }
+
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
       dispatch(showToast({ type: 'success', message: `Welcome back, ${res.data.user.name}!` }));
-      
-      if (res.data.user.role === 'ADMIN') {
-        router.push('/admin');
-      } else if (res.data.user.role === 'SALES_AGENT') {
-        router.push('/agent');
-      } else {
-        router.push('/');
-      }
+      router.push('/');
     } catch (err) {
       setErrorMsg(err?.data?.message || 'Invalid credentials');
       dispatch(showToast({ type: 'error', message: err?.data?.message || 'Login failed' }));
@@ -43,6 +44,7 @@ export default function LoginPage() {
     setEmail(roleEmail);
     setPassword('Password@123');
   };
+
 
   return (
     <div className="w-full min-h-[calc(100vh-140px)] bg-surface py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center font-inter">
@@ -104,35 +106,21 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Quick Demo Accounts Helper */}
-            <div className="mb-6 p-3 rounded-xl bg-surface-subtle border border-hairline">
+            {/* Quick Demo Customer Helper */}
+            <div className="mb-6 p-3.5 rounded-xl bg-surface-subtle border border-hairline">
               <span className="font-label-caps text-[9px] uppercase tracking-wider text-text-secondary font-bold block mb-2">
                 ⚡ Quick Demonstration Access:
               </span>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('admin@specbee.com')}
-                  className="px-2 py-1.5 rounded bg-white border border-hairline hover:border-primary-container text-[11px] font-label-caps uppercase font-bold text-text-secondary shadow-2xs transition text-center"
-                >
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('agent@specbee.com')}
-                  className="px-2 py-1.5 rounded bg-white border border-hairline hover:border-primary-container text-[11px] font-label-caps uppercase font-bold text-text-secondary shadow-2xs transition text-center"
-                >
-                  Agent
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('customer@specbee.com')}
-                  className="px-2 py-1.5 rounded bg-white border border-hairline hover:border-primary-container text-[11px] font-label-caps uppercase font-bold text-text-secondary shadow-2xs transition text-center"
-                >
-                  Customer
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => handleQuickLogin('customer@specbee.com')}
+                className="w-full px-3 py-2 rounded-lg bg-white border border-hairline hover:border-primary-container text-xs font-label-caps uppercase font-bold text-text-secondary shadow-2xs transition flex items-center justify-center gap-2 hover:bg-slate-50"
+              >
+                <span className="material-symbols-outlined text-[16px] text-primary">person</span>
+                <span>Customer (John Vault Collector)</span>
+              </button>
             </div>
+
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
@@ -184,6 +172,14 @@ export default function LoginPage() {
                 Register Consignment Account
               </Link>
             </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-100 text-center text-xs text-text-muted">
+              <span>Staff or Depository Officer? </span>
+              <Link href="/admin" className="font-label-caps text-xs uppercase font-bold text-amber-600 hover:underline ml-1">
+                Access Admin Console →
+              </Link>
+            </div>
+
           </div>
 
           <div className="pt-6 border-t border-hairline flex items-center justify-between text-text-muted text-[10px] font-label-caps uppercase">

@@ -40,9 +40,17 @@ export default function AdminConsolePage() {
   const [showAddCouponModal, setShowAddCouponModal] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Admin & Staff Login Form State
+  const [adminLoginForm, setAdminLoginForm] = useState({
+    email: '',
+    password: '',
+  });
+  const [adminAuthError, setAdminAuthError] = useState('');
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
 
   // Product form state (used for both Add and Edit)
   const [productForm, setProductForm] = useState({
@@ -118,18 +126,39 @@ export default function AdminConsolePage() {
     };
   }, [token, refetchOrders, refetchStats]);
 
-  const handleQuickAdminLogin = async () => {
+  const handleStaffLogin = async (e, customEmail, customPassword) => {
+    if (e) e.preventDefault();
+    setAdminAuthError('');
+
+    const loginEmail = customEmail || adminLoginForm.email;
+    const loginPassword = customPassword || adminLoginForm.password;
+
+    if (!loginEmail || !loginPassword) {
+      setAdminAuthError('Please enter both email address and password.');
+      return;
+    }
+
     try {
       const res = await loginMutation({
-        email: 'admin@specbee.com',
-        password: 'Password@123',
+        email: loginEmail.trim(),
+        password: loginPassword,
       }).unwrap();
+
+      // STRICT VALIDATION: ONLY ADMIN & SALES_AGENT CAN LOGIN FROM /admin!
+      if (res.data.user.role !== 'ADMIN' && res.data.user.role !== 'SALES_AGENT') {
+        setAdminAuthError('Access Denied: Customer accounts are not authorized to access the Admin Console. Only Administrators and Sales Agents have clearance.');
+        dispatch(showToast({ type: 'error', message: 'Unauthorized: Staff credentials required' }));
+        return;
+      }
+
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      dispatch(showToast({ type: 'success', message: 'System Administrator Terminal Unlocked' }));
+      dispatch(showToast({ type: 'success', message: `Staff Verified: Welcome ${res.data.user.name} (${res.data.user.role})` }));
     } catch (err) {
-      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Admin access failed' }));
+      setAdminAuthError(err?.data?.message || 'Authentication failed: Invalid credentials.');
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Admin login failed' }));
     }
   };
+
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -347,45 +376,128 @@ export default function AdminConsolePage() {
 
   if (!isAuthenticated || !isStaff) {
     return (
-      <div className="min-h-screen bg-[#0F172A] text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-[#1E293B] border border-slate-700/80 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div className="min-h-screen bg-[#0F172A] text-white flex items-center justify-center p-4 sm:p-6 font-inter">
+        <div className="max-w-md w-full bg-[#1E293B] border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-36 h-36 bg-[#F59E0B]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          {/* Logo & Header */}
           <div className="flex items-center gap-3 mb-6">
-            <img src="/logo.png" alt="Dropyhub" className="h-10 w-auto object-contain rounded" />
+            <img src="/logo.png" alt="Dropyhub Logo" className="h-10 w-auto object-contain rounded" />
             <div>
               <h1 className="font-headline-sm font-bold text-lg text-white tracking-tight uppercase">Dropyhub Vault</h1>
-              <p className="font-label-caps text-[11px] text-[#F59E0B] tracking-wider uppercase">Administrative Protocol</p>
+              <p className="font-label-caps text-[10px] text-[#F59E0B] tracking-wider uppercase font-semibold">
+                Staff Operations &amp; Admin Console
+              </p>
             </div>
           </div>
-          <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 mb-6 text-sm text-slate-300 space-y-2">
-            <p className="font-medium text-white flex items-center gap-2">
-              <span className="material-symbols-outlined text-amber-400 text-base">lock</span>
-              Elevated Staff Access Required
+
+          <div className="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 mb-5 text-xs text-slate-300 space-y-1">
+            <p className="font-semibold text-white flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-amber-400 text-sm">shield</span>
+              Restricted Depository Terminal
             </p>
-            <p className="text-xs text-slate-400">
-              Only authenticated administrators and authorized depository officers have clearance to access this control node.
+            <p className="text-[11px] text-slate-400">
+              Only authenticated <strong>Administrators</strong> and authorized <strong>Sales Agents</strong> have clearance to access this control node.
             </p>
           </div>
-          <div className="space-y-3">
+
+          {/* Auth Error Banner */}
+          {adminAuthError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-950/60 border border-red-500/40 text-red-200 text-xs flex items-start gap-2">
+              <span className="material-symbols-outlined text-red-400 text-sm mt-0.5">error</span>
+              <span className="leading-snug">{adminAuthError}</span>
+            </div>
+          )}
+
+          {/* Quick Staff Demonstration Credentials */}
+          <div className="mb-5 p-3 rounded-xl bg-slate-900/40 border border-slate-700/60">
+            <span className="font-label-caps text-[9px] uppercase tracking-wider text-slate-400 font-bold block mb-2">
+              ⚡ Quick Staff Demonstration Access:
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={isLoggingIn}
+                onClick={() => handleStaffLogin(null, 'admin@specbee.com', 'Password@123')}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex flex-col justify-between"
+              >
+                <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
+                  <span className="material-symbols-outlined text-xs">admin_panel_settings</span>
+                  <span>ADMIN</span>
+                </div>
+                <span className="text-[10px] text-slate-400 mt-0.5">Full control &amp; catalog</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isLoggingIn}
+                onClick={() => handleStaffLogin(null, 'agent@specbee.com', 'Password@123')}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex flex-col justify-between"
+              >
+                <div className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
+                  <span className="material-symbols-outlined text-xs">support_agent</span>
+                  <span>SALES AGENT</span>
+                </div>
+                <span className="text-[10px] text-slate-400 mt-0.5">Orders &amp; fulfillment</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Staff Login Form */}
+          <form onSubmit={handleStaffLogin} className="space-y-3.5">
+            <div>
+              <label className="block font-label-caps text-[10px] uppercase text-slate-300 font-bold mb-1">
+                Staff Depository Email
+              </label>
+              <input
+                type="email"
+                required
+                value={adminLoginForm.email}
+                onChange={(e) => setAdminLoginForm((prev) => ({ ...prev, email: e.target.value }))}
+                placeholder="admin@specbee.com"
+                className="w-full px-3.5 py-2 rounded-lg bg-slate-900/80 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500 transition"
+              />
+            </div>
+
+            <div>
+              <label className="block font-label-caps text-[10px] uppercase text-slate-300 font-bold mb-1">
+                Security Passcode
+              </label>
+              <input
+                type="password"
+                required
+                value={adminLoginForm.password}
+                onChange={(e) => setAdminLoginForm((prev) => ({ ...prev, password: e.target.value }))}
+                placeholder="••••••••••••"
+                className="w-full px-3.5 py-2 rounded-lg bg-slate-900/80 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500 transition"
+              />
+            </div>
+
             <button
-              onClick={handleQuickAdminLogin}
+              type="submit"
               disabled={isLoggingIn}
-              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
-              <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-              {isLoggingIn ? 'Authenticating...' : 'Unlock Admin Demo Console'}
+              <span className="material-symbols-outlined text-base">vpn_key</span>
+              <span>{isLoggingIn ? 'Verifying Clearance...' : 'Authenticate & Enter Console'}</span>
             </button>
+          </form>
+
+          {/* Back link */}
+          <div className="mt-5 pt-4 border-t border-slate-800 text-center">
             <Link
-              href="/login"
-              className="w-full py-3 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold rounded-xl uppercase tracking-wider text-center block transition-all border border-slate-700"
+              href="/"
+              className="text-[11px] font-medium text-slate-400 hover:text-amber-400 transition flex items-center justify-center gap-1"
             >
-              Manual Staff Sign In
+              <span className="material-symbols-outlined text-xs">arrow_back</span>
+              <span>Return to Customer Storefront</span>
             </Link>
           </div>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex overflow-x-hidden font-inter">
