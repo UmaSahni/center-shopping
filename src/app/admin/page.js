@@ -504,17 +504,13 @@ export default function AdminConsolePage() {
       {/* 1. LEFT FIXED SIDEBAR */}
       <aside className="fixed left-0 top-0 h-full w-72 bg-[#0F172A] text-slate-300 z-50 flex flex-col justify-between py-6 border-r border-slate-800 shadow-xl">
         <div className="flex flex-col gap-6">
-          {/* Logo & Console Title */}
-          <div className="flex items-center gap-3 px-6">
+          {/* Logo */}
+          <div className="flex items-center px-6">
             <img
               src="/logo.png"
-              alt="Dropyhub"
-              className="h-9 w-auto object-contain bg-white/10 p-1 rounded-lg"
+              alt="Center Shopping"
+              className="h-10 w-auto object-contain bg-white/10 p-1.5 rounded-lg"
             />
-            <div className="flex flex-col">
-              <span className="font-montserrat font-bold text-sm uppercase text-white tracking-tight">Center Shopping</span>
-              <span className="font-label-caps text-[10px] text-amber-400 uppercase tracking-wider font-semibold">Admin Console</span>
-            </div>
           </div>
 
           {/* Section Divider */}
