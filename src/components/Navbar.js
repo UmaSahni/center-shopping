@@ -86,19 +86,14 @@ export default function Navbar() {
           {/* Global Search Bar */}
           <div className="hidden md:flex flex-1 max-w-2xl mx-4">
             <form onSubmit={handleSearch} className="w-full">
-              <div className="relative flex items-center bg-[#F8FAFC] border border-slate-200 hover:border-slate-300 focus-within:border-amber-500 rounded-xl px-2 py-1 transition-all">
-                <div className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-lg text-slate-700 font-medium text-xs border border-slate-200/80 shadow-xs cursor-pointer select-none">
-                  <span className="text-[11px] font-bold uppercase text-slate-800">All Categories</span>
-                  <span className="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
-                </div>
-                <div className="h-5 w-px bg-slate-200 mx-2"></div>
-                <span className="material-symbols-outlined text-slate-400 text-[18px]">search</span>
+              <div className="relative flex items-center bg-[#F8FAFC] border border-slate-200 hover:border-slate-300 focus-within:border-amber-500 rounded-xl px-3 py-1 transition-all">
+                <span className="material-symbols-outlined text-slate-400 text-[18px] mr-2">search</span>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for products, brands and more..."
-                  className="w-full bg-transparent border-none text-slate-800 text-xs px-2.5 py-1.5 focus:outline-none placeholder:text-slate-400"
+                  className="w-full bg-transparent border-none text-slate-800 text-xs py-1.5 focus:outline-none placeholder:text-slate-400"
                 />
                 <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 bg-slate-200/60 rounded text-[10px] font-mono text-slate-500 font-semibold mr-1">
                   <span>⌘</span>

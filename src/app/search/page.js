@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useGetProductsQuery, useGetCategoriesQuery } from '../../redux/services/api.js';
-import { useDebounce } from '../../hooks/useDebounce.js';
 import ProductCard from '../../components/ProductCard.js';
 import Link from 'next/link';
 
@@ -17,10 +16,6 @@ function SearchResultsContent() {
     return param.split(',').map((c) => c.trim()).filter(Boolean);
   };
 
-  // Local search input with Debouncing
-  const [searchInput, setSearchInput] = useState(queryParam);
-  const debouncedSearch = useDebounce(searchInput, 400);
-
   const [selectedCategories, setSelectedCategories] = useState(() => parseCatParam(catParam));
   const [sortBy, setSortBy] = useState('curated');
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -28,11 +23,6 @@ function SearchResultsContent() {
   const [maxPrice, setMaxPrice] = useState('');
   const [page, setPage] = useState(1);
   const limit = 12;
-
-  // Sync state if URL params change externally
-  useEffect(() => {
-    setSearchInput(queryParam);
-  }, [queryParam]);
 
   useEffect(() => {
     setSelectedCategories(parseCatParam(catParam));
@@ -46,7 +36,7 @@ function SearchResultsContent() {
     setSelectedCategories(next);
 
     const params = new URLSearchParams();
-    if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
+    if (queryParam.trim()) params.set('q', queryParam.trim());
     if (next.length > 0) params.set('category', next.join(','));
     const qs = params.toString();
     router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
@@ -56,27 +46,15 @@ function SearchResultsContent() {
     setPage(1);
     setSelectedCategories([]);
     const params = new URLSearchParams();
-    if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
+    if (queryParam.trim()) params.set('q', queryParam.trim());
     const qs = params.toString();
     router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
   };
 
-  // When debounced search term changes, update URL smoothly
-  useEffect(() => {
-    if (debouncedSearch !== queryParam) {
-      setPage(1);
-      const params = new URLSearchParams();
-      if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
-      if (selectedCategories.length > 0) params.set('category', selectedCategories.join(','));
-      const qs = params.toString();
-      router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
-    }
-  }, [debouncedSearch, queryParam, selectedCategories, router]);
-
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedCategories, sortBy, inStockOnly, minPrice, maxPrice]);
+  }, [selectedCategories, sortBy, inStockOnly, minPrice, maxPrice, queryParam]);
 
   // Categories query
   const { data: categoriesData } = useGetCategoriesQuery();
@@ -84,7 +62,7 @@ function SearchResultsContent() {
 
   // Products query with pagination and filters
   const { data: productsData, isLoading, isFetching } = useGetProductsQuery({
-    search: debouncedSearch.trim() || undefined,
+    search: queryParam.trim() || undefined,
     category: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
     inStockOnly: inStockOnly || undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
@@ -115,49 +93,6 @@ function SearchResultsContent() {
 
   return (
     <div className="w-full bg-[#F8FAFC] min-h-screen pb-20 font-inter">
-      {/* Header Search Banner */}
-      <section className="bg-white border-b border-hairline py-8 px-4 sm:px-6 lg:px-12">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-montserrat text-[10px] uppercase tracking-widest text-[#fca311] font-bold">
-              Global Catalog Search &amp; Discovery
-            </span>
-            {isFetching && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                Filtering...
-              </span>
-            )}
-          </div>
-          <h1 className="font-montserrat text-2xl sm:text-3xl font-extrabold text-[#14213D] uppercase tracking-tight">
-            Search Authenticated Physical Reserves
-          </h1>
-
-          {/* Search Input Bar with Debouncing Indicator */}
-          <div className="mt-6 max-w-2xl relative">
-            <span className="material-symbols-outlined absolute left-4 top-3.5 text-slate-400 text-[20px]">
-              search
-            </span>
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search products, brands, categories and more..."
-              className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:border-[#14213D] shadow-xs transition"
-            />
-            {searchInput && (
-              <button
-                onClick={() => setSearchInput('')}
-                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 p-1"
-                title="Clear Search"
-              >
-                <span className="material-symbols-outlined text-[18px]">close</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* Main Filter & Results Layout */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -303,8 +238,8 @@ function SearchResultsContent() {
                 <div className="text-xs text-slate-500 font-medium">
                   Showing <strong className="font-bold text-slate-900">{products.length}</strong> of{' '}
                   <strong className="font-bold text-slate-900">{pagination.totalItems || products.length}</strong> authenticated assets
-                  {debouncedSearch && (
-                    <span> matching "<strong className="text-slate-900 font-bold">{debouncedSearch}</strong>"</span>
+                  {queryParam && (
+                    <span> matching "<strong className="text-slate-900 font-bold">{queryParam}</strong>"</span>
                   )}
                 </div>
 
@@ -324,12 +259,29 @@ function SearchResultsContent() {
                 </div>
               </div>
 
-              {/* Active Category Badges */}
-              {selectedCategories.length > 0 && (
+              {/* Active Filter Badges */}
+              {(selectedCategories.length > 0 || queryParam) && (
                 <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
                   <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mr-1">
-                    Filtered Categories:
+                    Active Filters:
                   </span>
+                  {queryParam && (
+                    <span className="inline-flex items-center gap-1 bg-amber-500/15 text-slate-900 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                      <span>Query: "{queryParam}"</span>
+                      <button
+                        onClick={() => {
+                          const params = new URLSearchParams();
+                          if (selectedCategories.length > 0) params.set('category', selectedCategories.join(','));
+                          const qs = params.toString();
+                          router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
+                        }}
+                        className="hover:text-amber-800 transition flex items-center"
+                        title="Clear search query"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">close</span>
+                      </button>
+                    </span>
+                  )}
                   {selectedCategories.map((c) => (
                     <span
                       key={c}
@@ -346,7 +298,10 @@ function SearchResultsContent() {
                     </span>
                   ))}
                   <button
-                    onClick={toggleAllCategories}
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      router.replace('/search', { scroll: false });
+                    }}
                     className="text-[11px] text-amber-600 hover:text-amber-800 hover:underline font-bold ml-1"
                   >
                     Clear All
@@ -379,11 +334,11 @@ function SearchResultsContent() {
                 </p>
                 <button
                   onClick={() => {
-                    setSearchInput('');
-                    setSelectedCategory('all');
+                    setSelectedCategories([]);
                     setInStockOnly(false);
                     setMinPrice('');
                     setMaxPrice('');
+                    router.replace('/search', { scroll: false });
                   }}
                   className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#fca311] hover:bg-[#e5940e] text-[#14213D] font-montserrat text-xs uppercase font-extrabold tracking-wider transition shadow-sm"
                 >
