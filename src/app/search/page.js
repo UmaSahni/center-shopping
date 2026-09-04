@@ -11,12 +11,13 @@ function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParam = searchParams.get('q') || '';
+  const catParam = searchParams.get('category') || searchParams.get('cat') || 'all';
 
   // Local search input with Debouncing
   const [searchInput, setSearchInput] = useState(queryParam);
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(catParam);
   const [sortBy, setSortBy] = useState('curated');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [minPrice, setMinPrice] = useState('');
@@ -24,22 +25,28 @@ function SearchResultsContent() {
   const [page, setPage] = useState(1);
   const limit = 12;
 
-  // Sync state if URL queryParam changes externally
+  // Sync state if URL params change externally
   useEffect(() => {
     setSearchInput(queryParam);
   }, [queryParam]);
+
+  useEffect(() => {
+    if (catParam) {
+      setSelectedCategory(catParam);
+    }
+  }, [catParam]);
 
   // When debounced search term changes, update URL smoothly
   useEffect(() => {
     if (debouncedSearch !== queryParam) {
       setPage(1);
-      if (debouncedSearch.trim()) {
-        router.replace(`/search?q=${encodeURIComponent(debouncedSearch.trim())}`, { scroll: false });
-      } else {
-        router.replace('/search', { scroll: false });
-      }
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
+      if (selectedCategory && selectedCategory !== 'all') params.set('category', selectedCategory);
+      const qs = params.toString();
+      router.replace(qs ? `/search?${qs}` : '/search', { scroll: false });
     }
-  }, [debouncedSearch, queryParam, router]);
+  }, [debouncedSearch, queryParam, selectedCategory, router]);
 
   // Reset page to 1 when filters change
   useEffect(() => {
@@ -68,10 +75,17 @@ function SearchResultsContent() {
     ? productsData
     : productsData?.products || [];
 
-  const pagination = productsData?.pagination || {
+  const pagination = productsData?.meta || productsData?.pagination || {
     page: 1,
     totalPages: Math.ceil(products.length / limit) || 1,
     totalItems: products.length,
+  };
+
+  const getPageRange = (current, total) => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    return [1, '...', current - 1, current, current + 1, '...', total];
   };
 
   return (
@@ -285,19 +299,25 @@ function SearchResultsContent() {
                   Previous
                 </button>
 
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`w-9 h-9 rounded-lg text-xs font-bold transition ${
-                      page === pageNum
-                        ? 'bg-[#14213D] text-[#fca311] shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
+                {getPageRange(page, pagination.totalPages).map((pageNum, idx) =>
+                  pageNum === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-slate-400 text-xs font-bold select-none">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`w-9 h-9 rounded-lg text-xs font-bold transition ${
+                        page === pageNum
+                          ? 'bg-[#14213D] text-[#fca311] shadow-sm'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                )}
 
                 <button
                   onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}

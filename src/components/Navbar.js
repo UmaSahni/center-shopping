@@ -240,34 +240,46 @@ export default function Navbar() {
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between py-1">
             <nav className="flex items-center gap-1 overflow-x-auto py-1 scrollbar-none font-montserrat text-xs font-bold uppercase tracking-wider">
               <Link
-                href="/products"
-                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
+                href="/search"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
               >
                 All Products
               </Link>
               <Link
-                href="/products?cat=Horology"
-                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
+                href="/search?category=Electronics"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
               >
-                Watches &amp; Timepieces
+                Electronics
               </Link>
               <Link
-                href="/products?cat=Bullion"
-                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
+                href="/search?category=Fashion"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
               >
-                Fine Jewellery &amp; Gold
+                Fashion
               </Link>
               <Link
-                href="/products?cat=Coins"
-                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
+                href="/search?category=Jewelry+%26+Watches"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
               >
-                Gemstones &amp; Coins
+                Jewelry &amp; Watches
               </Link>
               <Link
-                href="/products?cat=Leather"
-                className="px-3.5 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all"
+                href="/search?category=Home+%26+Kitchen"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
               >
-                Leather &amp; Accessories
+                Home &amp; Kitchen
+              </Link>
+              <Link
+                href="/search?category=Beauty+%26+Personal+Care"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
+              >
+                Beauty &amp; Care
+              </Link>
+              <Link
+                href="/search?category=Footwear+%26+Travel"
+                className="px-3 py-1.5 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition-all whitespace-nowrap"
+              >
+                Footwear &amp; Travel
               </Link>
             </nav>
 
