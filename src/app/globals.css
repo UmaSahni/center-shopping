@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+@layer base {
+  :root {
+    --primary: #855300;
+    --primary-container: #fca311;
+    --accent-hover: #e08f07;
+    --text-secondary: #14213d;
+    --text-primary: #000000;
+    --text-muted: #6c757d;
+    --surface-card: #ffffff;
+    --surface-subtle: #f8f9fa;
+    --surface: #f9f9f9;
+    --border-hairline: #e5e5e5;
+    --outline: #867461;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #1a1c1c;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Aurum Colors & Utilities */
+.bg-primary-container { background-color: #fca311 !important; }
+.text-primary-container { color: #fca311 !important; }
+.border-primary-container { border-color: #fca311 !important; }
+
+.bg-accent-hover:hover { background-color: #e08f07 !important; }
+
+.bg-text-secondary { background-color: #14213d !important; }
+.text-text-secondary { color: #14213d !important; }
+.border-navy { border-color: #14213d !important; }
+
+.text-text-primary { color: #000000 !important; }
+.text-text-muted { color: #6c757d !important; }
+
+.bg-surface-card { background-color: #ffffff !important; }
+.bg-surface-subtle { background-color: #f8f9fa !important; }
+.bg-surface { background-color: #f9f9f9 !important; }
+
+.border-hairline { border-color: #e5e5e5 !important; }
+.border-outline { border-color: #867461 !important; }
+
+.bg-primary-fixed { background-color: #ffddb8 !important; }
+.text-primary { color: #855300 !important; }
+
+.bg-on-secondary-fixed { background-color: #0d1b36 !important; }
+.text-secondary-fixed-dim { color: #b9c6ea !important; }
+
+.font-label-caps {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+.font-headline-sm {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.font-headline-md {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 700;
+}
+
+.font-display-hero {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 800;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
