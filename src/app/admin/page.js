@@ -102,11 +102,15 @@ export default function AdminConsolePage() {
   // Redux API Queries
   const { data: statsData, isLoading: isStatsLoading, refetch: refetchStats } = useGetAdminStatsQuery(undefined, {
     skip: !isStaff,
+    pollingInterval: 3000,
   });
 
   const { data: ordersData, isLoading: isOrdersLoading, refetch: refetchOrders } = useGetOrdersQuery(
     orderStatusFilter === 'ALL' ? undefined : { status: orderStatusFilter },
-    { skip: !isStaff }
+    {
+      skip: !isStaff,
+      pollingInterval: 3000,
+    }
   );
 
   const { data: productsData, isLoading: isProductsLoading, refetch: refetchProducts } = useGetProductsQuery(
@@ -148,12 +152,16 @@ export default function AdminConsolePage() {
       refetchStats();
     };
 
+    socket.on('order:status_updated', handleOrderUpdate);
     socket.on('ORDER_UPDATED', handleOrderUpdate);
     socket.on('NEW_ORDER', handleOrderUpdate);
+    socket.on('order:created', handleOrderUpdate);
 
     return () => {
+      socket.off('order:status_updated', handleOrderUpdate);
       socket.off('ORDER_UPDATED', handleOrderUpdate);
       socket.off('NEW_ORDER', handleOrderUpdate);
+      socket.off('order:created', handleOrderUpdate);
     };
   }, [token, refetchOrders, refetchStats]);
 

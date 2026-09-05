@@ -36,14 +36,17 @@ export default function SalesAgentDashboard() {
 
   const { data: statsData } = useGetAdminStatsQuery(undefined, {
     skip: !mounted || !isAuthenticated || (user?.role !== 'SALES_AGENT' && user?.role !== 'ADMIN'),
+    pollingInterval: 3000,
   });
 
   const { data: ordersData } = useGetOrdersQuery(undefined, {
     skip: !mounted || !isAuthenticated || (user?.role !== 'SALES_AGENT' && user?.role !== 'ADMIN'),
+    pollingInterval: 3000,
   });
 
   const { data: customersData } = useGetAdminCustomersQuery(undefined, {
     skip: !mounted || !isAuthenticated || (user?.role !== 'SALES_AGENT' && user?.role !== 'ADMIN'),
+    pollingInterval: 3000,
   });
 
   useEffect(() => {
