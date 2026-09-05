@@ -26,8 +26,8 @@ export default function Navbar() {
   const items = cart?.items || [];
   const totalItems = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
 
-  // If on admin routes, do not render consumer navbar
-  if (pathname?.startsWith('/admin')) {
+  // If on admin or agent routes, do not render consumer navbar
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/agent')) {
     return null;
   }
 

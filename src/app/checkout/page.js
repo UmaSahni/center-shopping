@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
   const [removeCartItem, { isLoading: isRemovingItem }] = useRemoveCartItemMutation();
   const [submitError, setSubmitError] = useState('');
+  const [successModalData, setSuccessModalData] = useState(null);
 
   const handleRemoveItem = async (itemId, itemTitle) => {
     try {
@@ -57,6 +58,41 @@ export default function CheckoutPage() {
 
   const [transitMethod, setTransitMethod] = useState('express_courier');
   const [paymentMethod, setPaymentMethod] = useState('CREDIT_CARD');
+
+  // NMI Card Details State
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    expiry: '',
+    cvv: '',
+    cardHolder: user?.name || '',
+  });
+
+  const handleCardChange = (e) => {
+    let { name, value } = e.target;
+    if (name === 'cardNumber') {
+      // Auto-format card number in 4-digit chunks
+      value = value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})/g, '$1 ').trim();
+    } else if (name === 'expiry') {
+      // Auto-format MM/YY
+      value = value.replace(/\D/g, '').slice(0, 4);
+      if (value.length >= 3) {
+        value = `${value.slice(0, 2)}/${value.slice(2)}`;
+      }
+    } else if (name === 'cvv') {
+      value = value.replace(/\D/g, '').slice(0, 4);
+    }
+    setCardDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFillSandboxCard = () => {
+    setCardDetails({
+      cardNumber: '4111 1111 1111 1111',
+      expiry: '12/28',
+      cvv: '123',
+      cardHolder: user?.name || 'Rahul Sharma',
+    });
+    dispatch(showToast({ type: 'info', message: 'Filled NMI Sandbox Test Card details' }));
+  };
 
   const cart = cartData?.data || cartData || null;
   const items = cart?.items || [];
@@ -107,6 +143,25 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (paymentMethod === 'CREDIT_CARD') {
+      const cleanCard = (cardDetails.cardNumber || '').replace(/\s+/g, '');
+      const cleanExp = (cardDetails.expiry || '').replace(/\D/g, '');
+      const cleanCvv = (cardDetails.cvv || '').trim();
+
+      if (!cleanCard || cleanCard.length < 13) {
+        setSubmitError('Please enter a valid Credit / Debit Card Number.');
+        return;
+      }
+      if (!cleanExp || cleanExp.length < 4) {
+        setSubmitError('Please enter card expiry in MM/YY format.');
+        return;
+      }
+      if (!cleanCvv || cleanCvv.length < 3) {
+        setSubmitError('Please enter a valid 3 or 4-digit CVV security code.');
+        return;
+      }
+    }
+
     try {
       const payload = {
         items: items.map((it) => ({
@@ -114,21 +169,46 @@ export default function CheckoutPage() {
           quantity: it.quantity,
         })),
         shippingAddress: `${shippingAddress.fullName}, ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}, ${shippingAddress.country} (Delivery: ${transitMethod === 'express_courier' ? 'Express Courier Delivery' : 'Store Pick-up'})`,
-        paymentMethod,
+        paymentMethod: paymentMethod === 'CREDIT_CARD' ? 'CARD' : paymentMethod,
+        billingAddress: {
+          address: shippingAddress.address,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postalCode: shippingAddress.postalCode,
+          country: shippingAddress.country,
+        },
         couponCode: activeCoupon ? activeCoupon.code : undefined,
         idempotencyKey: 'IDEMP-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9),
       };
 
+      if (paymentMethod === 'CREDIT_CARD') {
+        payload.cardDetails = {
+          ccnumber: (cardDetails.cardNumber || '').replace(/\s+/g, ''),
+          ccexp: (cardDetails.expiry || '').replace(/\D/g, ''),
+          cvv: (cardDetails.cvv || '').trim(),
+          ccholder: cardDetails.cardHolder || shippingAddress.fullName,
+        };
+      }
+
       const res = await checkoutMutation(payload).unwrap();
       dispatch(removeActiveCoupon());
-      dispatch(showToast({ type: 'success', message: 'Order placed successfully!' }));
+      dispatch(showToast({ type: 'success', message: paymentMethod === 'ON_ACCOUNT' ? 'Order confirmed on Account (Demo Bypass)!' : 'Payment approved & order placed successfully!' }));
       
-      const orderId = res?.data?.order?.id || res?.data?.id || res?.order?.id;
-      if (orderId) {
-        router.push(`/orders/${orderId}`);
-      } else {
-        router.push('/orders');
-      }
+      const orderObj = res?.data?.order || res?.data || res?.order || {};
+      const orderId = orderObj?.id || res?.data?.id;
+      const orderNumber = orderObj?.orderNumber || 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+      const transactionId = orderObj?.payment?.transactionId || (paymentMethod === 'ON_ACCOUNT' ? 'ON-ACCT-DEMO' : 'NMI-GATEWAY-AUTH');
+
+      setSuccessModalData({
+        orderId,
+        orderNumber,
+        totalAmount: finalTotal,
+        paymentMethod,
+        transactionId,
+        recipientName: shippingAddress.fullName,
+        itemCount: items.length,
+        placedAt: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+      });
     } catch (err) {
       const errMsg = err?.data?.message || err?.message || 'Order processing failed. Please try again.';
       setSubmitError(errMsg);
@@ -330,48 +410,54 @@ export default function CheckoutPage() {
                 <span className="font-label-caps text-[10px] uppercase text-text-secondary font-bold">
                   Select Delivery Option
                 </span>
-                <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition ${transitMethod === 'express_courier' ? 'border-[#fca311] bg-amber-50/50' : 'border-hairline bg-surface-subtle'}`}>
-                  <div className="flex items-center gap-3">
+                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition shadow-2xs ${transitMethod === 'express_courier' ? 'border-[#14213D] bg-slate-50 ring-2 ring-[#14213D]/10' : 'border-slate-200 bg-white hover:bg-slate-50/60'}`}>
+                  <div className="flex items-center gap-3.5">
                     <input
                       type="radio"
                       name="transit"
                       checked={transitMethod === 'express_courier'}
                       onChange={() => setTransitMethod('express_courier')}
-                      className="accent-[#fca311] cursor-pointer"
+                      className="accent-[#14213D] w-4 h-4 cursor-pointer"
                     />
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                    </div>
                     <div>
                       <div className="font-headline-sm text-xs font-bold text-text-secondary uppercase">
                         Express Doorstep Delivery
                       </div>
-                      <div className="font-inter text-[11px] text-text-muted">
+                      <div className="font-inter text-[11px] text-text-muted mt-0.5">
                         Fast delivery across India via Blue Dart / Delhivery with SMS &amp; OTP tracking
                       </div>
                     </div>
                   </div>
-                  <span className="font-label-caps text-[10px] uppercase text-[#fca311] font-bold">
+                  <span className="font-label-caps text-[10px] uppercase text-[#14213D] font-bold bg-amber-100/80 px-2.5 py-1 rounded-full shrink-0 ml-2">
                     {subtotal >= 999 ? 'Complimentary' : '₹99.00'}
                   </span>
                 </label>
 
-                <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition ${transitMethod === 'store_pickup' ? 'border-[#fca311] bg-amber-50/50' : 'border-hairline bg-surface-subtle'}`}>
-                  <div className="flex items-center gap-3">
+                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition shadow-2xs ${transitMethod === 'store_pickup' ? 'border-[#14213D] bg-slate-50 ring-2 ring-[#14213D]/10' : 'border-slate-200 bg-white hover:bg-slate-50/60'}`}>
+                  <div className="flex items-center gap-3.5">
                     <input
                       type="radio"
                       name="transit"
                       checked={transitMethod === 'store_pickup'}
                       onChange={() => setTransitMethod('store_pickup')}
-                      className="accent-[#fca311] cursor-pointer"
+                      className="accent-[#14213D] w-4 h-4 cursor-pointer"
                     />
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[18px]">store</span>
+                    </div>
                     <div>
                       <div className="font-headline-sm text-xs font-bold text-text-secondary uppercase">
                         Center Shopping Store Pick-up
                       </div>
-                      <div className="font-inter text-[11px] text-text-muted">
+                      <div className="font-inter text-[11px] text-text-muted mt-0.5">
                         Direct store pickup from our local retail hub in your city
                       </div>
                     </div>
                   </div>
-                  <span className="font-label-caps text-[10px] uppercase text-emerald-600 font-bold">
+                  <span className="font-label-caps text-[10px] uppercase text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full font-bold shrink-0 ml-2">
                     FREE
                   </span>
                 </label>
@@ -395,56 +481,242 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Payment Tabs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Payment Tabs (4 Options: NMI Card, On-Account Demo Bypass, UPI, Bank Transfer) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('CREDIT_CARD')}
-                  className={`p-4 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
+                  className={`p-3.5 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
                     paymentMethod === 'CREDIT_CARD'
-                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-sm'
+                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-md ring-2 ring-[#fca311]'
                       : 'bg-surface-subtle border-hairline hover:bg-slate-100 text-text-secondary'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[20px] text-[#fca311]">credit_card</span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="material-symbols-outlined text-[20px] text-[#fca311]">credit_card</span>
+                    <span className="font-label-caps text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">NMI Gateway</span>
+                  </div>
                   <div>
                     <span className="font-label-caps text-[11px] font-bold block uppercase">Credit / Debit Card</span>
-                    <span className="text-[10px] opacity-70">RuPay / Visa / Mastercard / Amex</span>
+                    <span className="text-[10px] opacity-70">Visa / MC / Amex / RuPay</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('ON_ACCOUNT')}
+                  className={`p-3.5 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
+                    paymentMethod === 'ON_ACCOUNT'
+                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-md ring-2 ring-[#fca311]'
+                      : 'bg-amber-50/50 border-amber-200 hover:bg-amber-100/60 text-text-secondary'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="material-symbols-outlined text-[20px] text-amber-500">domain_verification</span>
+                    <span className="font-label-caps text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-500 text-black font-extrabold">Demo Safe</span>
+                  </div>
+                  <div>
+                    <span className="font-label-caps text-[11px] font-bold block uppercase text-amber-900">On Account</span>
+                    <span className="text-[10px] text-amber-700/90 font-medium">Bypass Gateway (Instant)</span>
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('UPI')}
-                  className={`p-4 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
+                  className={`p-3.5 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
                     paymentMethod === 'UPI'
-                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-sm'
+                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-md ring-2 ring-[#fca311]'
                       : 'bg-surface-subtle border-hairline hover:bg-slate-100 text-text-secondary'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[20px] text-[#fca311]">account_balance_wallet</span>
                   <div>
                     <span className="font-label-caps text-[11px] font-bold block uppercase">UPI / Instant Pay</span>
-                    <span className="text-[10px] opacity-70">Google Pay / PhonePe / Paytm / BHIM</span>
+                    <span className="text-[10px] opacity-70">GPay / PhonePe / Paytm</span>
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('BANK_TRANSFER')}
-                  className={`p-4 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
+                  className={`p-3.5 rounded-xl text-left border flex flex-col justify-between h-24 transition cursor-pointer ${
                     paymentMethod === 'BANK_TRANSFER'
-                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-sm'
+                      ? 'bg-[#14213D] text-white border-[#14213D] shadow-md ring-2 ring-[#fca311]'
                       : 'bg-surface-subtle border-hairline hover:bg-slate-100 text-text-secondary'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[20px] text-[#fca311]">account_balance</span>
                   <div>
-                    <span className="font-label-caps text-[11px] font-bold block uppercase">Net Banking / NEFT</span>
-                    <span className="text-[10px] opacity-70">All Major Indian Banks Supported</span>
+                    <span className="font-label-caps text-[11px] font-bold block uppercase">Net Banking</span>
+                    <span className="text-[10px] opacity-70">Direct Wire / NEFT</span>
                   </div>
                 </button>
               </div>
+
+              {/* Dynamic Payment Details Area */}
+              {paymentMethod === 'CREDIT_CARD' && (
+                <div className="mt-2 p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/90 shadow-sm flex flex-col gap-4">
+                  
+                  {/* Header & Auto-Fill Toolbar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#14213D] text-[#fca311] flex items-center justify-center shadow-xs">
+                        <span className="material-symbols-outlined text-[18px]">credit_card</span>
+                      </div>
+                      <div>
+                        <span className="font-headline-sm text-xs font-bold text-text-secondary uppercase block">
+                          NMI Gateway Card Processing
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Direct 256-Bit SSL Encrypted Channel
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleFillSandboxCard}
+                      className="px-3 py-1.5 text-[11px] font-bold bg-[#14213D] hover:bg-black text-[#fca311] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">auto_fix_high</span>
+                      <span>Auto-Fill NMI Test Card</span>
+                    </button>
+                  </div>
+
+                  {/* Card Form Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    {/* Card Number Field */}
+                    <div className="sm:col-span-2">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="font-label-caps text-[10px] uppercase text-text-secondary font-bold">
+                          Card Number *
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-bold">VISA</span>
+                          <span className="px-1.5 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-700 text-[9px] font-bold">MC</span>
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 text-[9px] font-bold">RUPAY</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 shadow-2xs focus-within:border-[#14213D] focus-within:ring-2 focus-within:ring-[#14213D]/10 transition">
+                        <span className="material-symbols-outlined text-[20px] text-slate-400 mr-2.5 shrink-0">
+                          credit_card
+                        </span>
+                        <input
+                          type="text"
+                          name="cardNumber"
+                          maxLength={19}
+                          value={cardDetails.cardNumber}
+                          onChange={handleCardChange}
+                          placeholder="4111 1111 1111 1111"
+                          className="w-full bg-transparent text-xs font-mono font-bold text-slate-900 focus:outline-none placeholder:text-slate-300 tracking-wider"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Expiration Field */}
+                    <div>
+                      <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1.5">
+                        Expiration (MM/YY) *
+                      </label>
+                      <div className="flex items-center bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 shadow-2xs focus-within:border-[#14213D] focus-within:ring-2 focus-within:ring-[#14213D]/10 transition">
+                        <span className="material-symbols-outlined text-[18px] text-slate-400 mr-2 shrink-0">
+                          calendar_month
+                        </span>
+                        <input
+                          type="text"
+                          name="expiry"
+                          maxLength={5}
+                          value={cardDetails.expiry}
+                          onChange={handleCardChange}
+                          placeholder="12/28"
+                          className="w-full bg-transparent text-xs font-mono font-bold text-slate-900 focus:outline-none placeholder:text-slate-300"
+                        />
+                      </div>
+                    </div>
+
+                    {/* CVV Field */}
+                    <div>
+                      <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1.5">
+                        Security Code (CVV) *
+                      </label>
+                      <div className="flex items-center bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 shadow-2xs focus-within:border-[#14213D] focus-within:ring-2 focus-within:ring-[#14213D]/10 transition">
+                        <span className="material-symbols-outlined text-[18px] text-slate-400 mr-2 shrink-0">
+                          lock
+                        </span>
+                        <input
+                          type="password"
+                          name="cvv"
+                          maxLength={4}
+                          value={cardDetails.cvv}
+                          onChange={handleCardChange}
+                          placeholder="123"
+                          className="w-full bg-transparent text-xs font-mono font-bold text-slate-900 focus:outline-none placeholder:text-slate-300 tracking-widest"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Cardholder Name */}
+                    <div className="sm:col-span-2">
+                      <label className="block font-label-caps text-[10px] uppercase text-text-secondary font-bold mb-1.5">
+                        Name on Card
+                      </label>
+                      <div className="flex items-center bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 shadow-2xs focus-within:border-[#14213D] focus-within:ring-2 focus-within:ring-[#14213D]/10 transition">
+                        <span className="material-symbols-outlined text-[18px] text-slate-400 mr-2 shrink-0">
+                          person
+                        </span>
+                        <input
+                          type="text"
+                          name="cardHolder"
+                          value={cardDetails.cardHolder}
+                          onChange={handleCardChange}
+                          placeholder="Full Name as printed on card"
+                          className="w-full bg-transparent text-xs font-inter font-medium text-slate-900 focus:outline-none placeholder:text-slate-300"
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Security Footer Notice */}
+                  <div className="flex items-center gap-2 text-[11px] text-slate-600 bg-emerald-50/60 p-3 rounded-xl border border-emerald-200">
+                    <span className="material-symbols-outlined text-emerald-600 text-[18px] shrink-0">verified_user</span>
+                    <span>PCI SAQ A Compliant: Card data is directly processed by NMI Payment Gateway with bank-grade encryption.</span>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'ON_ACCOUNT' && (
+                <div className="mt-2 p-4 sm:p-5 rounded-xl bg-amber-50/70 border border-amber-200 flex flex-col gap-2.5 text-xs text-amber-900">
+                  <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-amber-950 font-label-caps">
+                    <span className="material-symbols-outlined text-[18px] text-amber-600">verified</span>
+                    <span>On Account / Net-30 Demo Bypass Mode Active</span>
+                  </div>
+                  <p className="leading-relaxed text-amber-800">
+                    This order will be <strong>instantly placed and confirmed on account</strong>, completely bypassing the external payment gateway. This ensures 100% reliable checkouts during live customer demonstrations and stakeholder reviews.
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-700 font-medium">
+                    <span className="material-symbols-outlined text-[15px]">info</span>
+                    <span>Invoice reference will be generated and auto-assigned to this order.</span>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'UPI' && (
+                <div className="mt-2 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex flex-col gap-2">
+                  <p className="font-bold text-text-secondary">Scan UPI QR or enter Virtual Payment Address (VPA)</p>
+                  <p className="text-[11px]">Instant settlement via NPCI Unified Payments Interface with auto-verification.</p>
+                </div>
+              )}
+
+              {paymentMethod === 'BANK_TRANSFER' && (
+                <div className="mt-2 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex flex-col gap-2">
+                  <p className="font-bold text-text-secondary">Corporate Bank Wire / NEFT / RTGS</p>
+                  <p className="text-[11px]">Bank account &amp; IFSC routing details will be provided on your order confirmation page.</p>
+                </div>
+              )}
 
               <div className="p-4 bg-surface-subtle border border-hairline rounded-xl text-xs text-text-muted leading-relaxed flex items-center gap-2">
                 <span className="material-symbols-outlined text-emerald-600 text-[20px] shrink-0">verified</span>
@@ -589,6 +861,120 @@ export default function CheckoutPage() {
           </div>
         </form>
       </section>
+
+      {/* ========================================================================= */}
+      {/* PHONEPE / GPAY STYLE VIBRANT GREEN ORDER SUCCESS SQUARE POPUP            */}
+      {/* ========================================================================= */}
+      {successModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="relative w-full max-w-[500px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-emerald-200 animate-in zoom-in-95 duration-300 flex flex-col">
+            
+            {/* Top Emerald Green Header */}
+            <div className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 px-6 py-5 text-white overflow-hidden shadow-inner flex items-center justify-between">
+              
+              {/* Left: Icon & Badge */}
+              <div className="flex items-center gap-3.5 z-10">
+                <div className="relative w-12 h-12 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-white/20 animate-ping opacity-60" />
+                  <div className="relative w-11 h-11 rounded-full bg-white text-emerald-600 shadow-md flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[26px] font-black">check</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="inline-block px-2 py-0.5 rounded bg-black/20 text-emerald-100 text-[10px] uppercase tracking-wider font-extrabold font-['Montserrat']">
+                    Payment Successful
+                  </span>
+                  <p className="text-emerald-100 text-[11px] font-medium mt-0.5">
+                    Paid to <strong className="text-white">DropyHub Store</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: Big Amount */}
+              <div className="text-right z-10">
+                <span className="text-[10px] uppercase text-emerald-200 font-bold block">Amount Paid</span>
+                <span className="font-['Montserrat'] text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                  {formatPrice(successModalData.totalAmount)}
+                </span>
+              </div>
+            </div>
+
+            {/* Middle Square Body: Details Grid */}
+            <div className="p-5 sm:p-6 bg-slate-50 flex flex-col gap-3.5">
+              
+              {/* Security Banner */}
+              <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-[11px]">
+                <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <span className="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+                  <span>256-Bit SSL Encrypted Authorization</span>
+                </div>
+                <span className="font-mono text-[10px] text-slate-400 font-bold">NMI SANDBOX</span>
+              </div>
+
+              {/* 2x2 Details Grid for Balanced Square Look */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
+                  <span className="text-[10px] uppercase text-slate-400 font-bold block mb-0.5">Order Number</span>
+                  <span className="font-mono font-bold text-xs text-[#14213D] block truncate">{successModalData.orderNumber}</span>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
+                  <span className="text-[10px] uppercase text-slate-400 font-bold block mb-0.5">Gateway Ref ID</span>
+                  <span className="font-mono font-bold text-[11px] text-emerald-700 block truncate">{successModalData.transactionId}</span>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
+                  <span className="text-[10px] uppercase text-slate-400 font-bold block mb-0.5">Payment Method</span>
+                  <span className="font-bold text-xs text-slate-800 uppercase block truncate">
+                    {successModalData.paymentMethod === 'ON_ACCOUNT' ? 'On Account (Demo)' : 'NMI Credit Card'}
+                  </span>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
+                  <span className="text-[10px] uppercase text-slate-400 font-bold block mb-0.5">Recipient</span>
+                  <span className="font-semibold text-xs text-slate-700 block truncate">{successModalData.recipientName}</span>
+                </div>
+              </div>
+
+              {/* Transit Notice */}
+              <div className="flex items-center gap-2 text-[11px] text-slate-600 bg-emerald-50/80 px-3.5 py-2.5 rounded-xl border border-emerald-200">
+                <span className="material-symbols-outlined text-emerald-600 text-[18px] shrink-0">local_shipping</span>
+                <p className="leading-tight text-[11px]">
+                  Order confirmed and queued for express dispatch with live tracking!
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="p-5 bg-white border-t border-slate-200 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (successModalData.orderId) {
+                    router.push(`/orders/${successModalData.orderId}`);
+                  } else {
+                    router.push('/orders');
+                  }
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#14213D] hover:bg-black text-[#fca311] font-['Montserrat'] text-xs uppercase font-extrabold tracking-wider transition shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              >
+                <span>Track Order</span>
+                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="py-3 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-['Montserrat'] text-xs uppercase font-bold tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">storefront</span>
+                <span>Store</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

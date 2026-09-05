@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [quickLoggingInRole, setQuickLoggingInRole] = useState(null); // 'CUSTOMER' | 'AGENT' | 'ADMIN' | null
 
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
@@ -44,25 +45,59 @@ export default function LoginPage() {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setErrorMsg('');
 
     try {
       const res = await loginMutation({ email, password }).unwrap();
+      const loggedInUser = res.data.user;
 
-      // Enforce: Only customers can sign in through the customer storefront login
-      if (res.data.user.role === 'ADMIN' || res.data.user.role === 'SALES_AGENT') {
-        setErrorMsg('Staff accounts (Administrator / Sales Agent) must sign in via the Admin Console at /admin.');
-        dispatch(showToast({ type: 'error', message: 'Staff accounts must sign in via /admin' }));
-        return;
+      dispatch(setCredentials({ user: loggedInUser, token: res.data.token }));
+
+      if (loggedInUser.role === 'SALES_AGENT') {
+        dispatch(showToast({ type: 'success', message: `Welcome to Sales Agent Portal, ${loggedInUser.name}!` }));
+        router.push('/agent');
+      } else if (loggedInUser.role === 'ADMIN') {
+        dispatch(showToast({ type: 'success', message: `Welcome to Admin Console, ${loggedInUser.name}!` }));
+        router.push('/admin');
+      } else {
+        dispatch(showToast({ type: 'success', message: `Welcome back, ${loggedInUser.name}!` }));
+        router.push('/');
       }
-
-      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      dispatch(showToast({ type: 'success', message: `Welcome back, ${res.data.user.name}!` }));
-      router.push('/');
     } catch (err) {
       setErrorMsg(err?.data?.message || 'Invalid credentials');
       dispatch(showToast({ type: 'error', message: err?.data?.message || 'Login failed' }));
+    }
+  };
+
+  const handleQuickLogin = async (quickEmail, quickPassword, roleTag) => {
+    setEmail(quickEmail);
+    setPassword(quickPassword);
+    setErrorMsg('');
+    setQuickLoggingInRole(roleTag);
+
+    try {
+      const res = await loginMutation({ email: quickEmail, password: quickPassword }).unwrap();
+      const loggedInUser = res.data.user;
+
+      dispatch(setCredentials({ user: loggedInUser, token: res.data.token }));
+
+      if (loggedInUser.role === 'SALES_AGENT' || roleTag === 'AGENT') {
+        dispatch(showToast({ type: 'success', message: `Welcome to Sales Agent Portal, ${loggedInUser.name}!` }));
+        router.push('/agent');
+      } else if (loggedInUser.role === 'ADMIN' || roleTag === 'ADMIN') {
+        dispatch(showToast({ type: 'success', message: `Welcome to Admin Console, ${loggedInUser.name}!` }));
+        router.push('/admin');
+      } else {
+        dispatch(showToast({ type: 'success', message: `Welcome back, ${loggedInUser.name}!` }));
+        router.push('/');
+      }
+    } catch (err) {
+      const msg = err?.data?.message || 'Demo sign-in failed';
+      setErrorMsg(msg);
+      dispatch(showToast({ type: 'error', message: msg }));
+    } finally {
+      setQuickLoggingInRole(null);
     }
   };
 
@@ -219,20 +254,44 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 text-center text-xs text-text-muted">
+            {/* Portal Switcher Buttons: Navigate to Particular Login Screens */}
+            <div className="mt-5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col gap-2">
+              <span className="font-label-caps text-[9px] uppercase tracking-wider font-extrabold text-slate-500 text-center block">
+                Select Portal / Login Screen
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                <Link
+                  href="/login"
+                  className="px-2 py-2 rounded-lg bg-slate-900 text-amber-400 font-bold text-[11px] transition text-center shadow-2xs flex items-center justify-center gap-1 border border-slate-800"
+                  title="Customer Login Screen"
+                >
+                  <span>👤 Customer</span>
+                </Link>
+
+                <Link
+                  href="/agent"
+                  className="px-2 py-2 rounded-lg bg-white hover:bg-blue-50 border border-blue-200 text-[11px] font-bold text-blue-800 transition text-center shadow-2xs flex items-center justify-center gap-1 hover:border-blue-300"
+                  title="Go to Sales Agent Login Screen"
+                >
+                  <span>💼 Sales Agent</span>
+                </Link>
+
+                <Link
+                  href="/admin"
+                  className="px-2 py-2 rounded-lg bg-white hover:bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800 transition text-center shadow-2xs flex items-center justify-center gap-1 hover:border-amber-300"
+                  title="Go to Admin Terminal Login Screen"
+                >
+                  <span>⚡ Admin</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-5 text-center text-xs text-text-muted">
               <span>Don't have an account? </span>
               <Link href="/register" className="font-label-caps text-xs uppercase font-bold text-text-secondary hover:text-primary ml-1">
                 Create Account
               </Link>
             </div>
-
-            <div className="mt-4 pt-4 border-t border-slate-100 text-center text-xs text-text-muted">
-              <span>Staff or Admin? </span>
-              <Link href="/admin" className="font-label-caps text-xs uppercase font-bold text-amber-600 hover:underline ml-1">
-                Admin Login →
-              </Link>
-            </div>
-
           </div>
 
           <div className="pt-6 border-t border-hairline flex items-center justify-between text-text-muted text-[10px] font-label-caps uppercase">

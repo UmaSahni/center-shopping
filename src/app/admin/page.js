@@ -1190,15 +1190,15 @@ export default function AdminConsolePage() {
               {/* Products Table with Complete Edit Details Action */}
               <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[1020px]">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
-                        <th className="px-6 py-3.5">Physical Asset</th>
-                        <th className="px-6 py-3.5">Category</th>
-                        <th className="px-6 py-3.5">Unit Price</th>
-                        <th className="px-6 py-3.5">Stock & Variants</th>
-                        <th className="px-6 py-3.5">Status</th>
-                        <th className="px-6 py-3.5 text-right">Actions</th>
+                        <th className="px-6 py-3.5 min-w-[280px]">Physical Asset</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[140px]">Category</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[110px]">Unit Price</th>
+                        <th className="px-6 py-3.5 min-w-[200px]">Stock & Variants</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[120px]">Status</th>
+                        <th className="px-6 py-3.5 text-right whitespace-nowrap min-w-[170px]">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1211,39 +1211,39 @@ export default function AdminConsolePage() {
 
                         return (
                           <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-4 min-w-[280px]">
                               <div className="flex items-center gap-3.5">
                                 <img
                                   src={img}
                                   alt={prod.title}
-                                  className="w-12 h-12 rounded-xl object-cover border border-slate-200 bg-slate-50 shadow-sm"
+                                  className="w-12 h-12 rounded-xl object-cover border border-slate-200 bg-slate-50 shadow-sm shrink-0"
                                 />
                                 <div>
                                   <Link
                                     href={`/products/${prod.slug || prod.id}`}
                                     target="_blank"
-                                    className="font-bold text-slate-900 hover:text-amber-600 transition-colors block text-xs"
+                                    className="font-bold text-slate-900 hover:text-amber-600 transition-colors block text-xs line-clamp-2"
                                   >
                                     {prod.title}
                                   </Link>
-                                  <span className="text-[10px] text-slate-400 font-mono">
+                                  <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                                     SKU: #{mainVariant?.sku || prod.id.slice(-6).toUpperCase()}
                                   </span>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-100 text-slate-700">
                                 {cat}
                               </span>
                             </td>
-                            <td className="px-6 py-4 font-bold text-slate-900">
+                            <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">
                               {formatPrice(price)}
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex flex-col gap-1">
                                 {prod.variants?.map((v) => (
-                                  <div key={v.id} className="flex items-center gap-2">
+                                  <div key={v.id} className="flex items-center gap-2 whitespace-nowrap">
                                     <span className="text-[11px] text-slate-600 font-medium">{v.title}:</span>
                                     <span
                                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
@@ -1260,32 +1260,32 @@ export default function AdminConsolePage() {
                                 ))}
                               </div>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-4 whitespace-nowrap">
                               {totalStock > 0 ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                                   In Stock
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap bg-rose-50 text-rose-700 border border-rose-200">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
                                   Out of Stock
                                 </span>
                               )}
                             </td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex items-center justify-end gap-2">
+                            <td className="px-6 py-4 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                                 <Link
                                   href={`/admin/products/${prod.id}/edit`}
-                                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200 rounded-lg text-xs transition-colors inline-flex items-center gap-1"
+                                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold border border-amber-300 rounded-lg text-xs transition-colors inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
                                 >
-                                  <span className="material-symbols-outlined text-[14px]">edit_note</span>
+                                  <span className="material-symbols-outlined text-[15px] text-amber-700">edit_note</span>
                                   Edit Details
                                 </Link>
                                 <Link
                                   href={`/products/${prod.slug || prod.id}`}
                                   target="_blank"
-                                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors inline-flex items-center"
+                                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg transition-colors inline-flex items-center justify-center shrink-0 shadow-sm"
                                   title="View on Storefront"
                                 >
                                   <span className="material-symbols-outlined text-[15px]">visibility</span>
@@ -1427,16 +1427,16 @@ export default function AdminConsolePage() {
               {/* Orders Data Table */}
               <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[980px]">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
-                        <th className="px-6 py-3.5">Order ID</th>
-                        <th className="px-6 py-3.5">Date & Time</th>
-                        <th className="px-6 py-3.5">Customer</th>
-                        <th className="px-6 py-3.5">Products Ordered</th>
-                        <th className="px-6 py-3.5">Total INR</th>
-                        <th className="px-6 py-3.5">Order Status</th>
-                        <th className="px-6 py-3.5 text-right">Invoice / Details</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[110px]">Order ID</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[150px]">Date & Time</th>
+                        <th className="px-6 py-3.5 min-w-[180px]">Customer</th>
+                        <th className="px-6 py-3.5 min-w-[160px]">Products Ordered</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[110px]">Total INR</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[140px]">Order Status</th>
+                        <th className="px-6 py-3.5 text-right whitespace-nowrap min-w-[150px]">Invoice / Details</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1563,16 +1563,16 @@ export default function AdminConsolePage() {
               {/* Coupons Table */}
               <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[850px]">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
-                        <th className="px-6 py-3.5">Coupon Code</th>
-                        <th className="px-6 py-3.5">Concession Type</th>
-                        <th className="px-6 py-3.5">Benefit</th>
-                        <th className="px-6 py-3.5">Min Order Value</th>
-                        <th className="px-6 py-3.5">Usage Limit</th>
-                        <th className="px-6 py-3.5">Expiry Date</th>
-                        <th className="px-6 py-3.5 text-right">Status</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[130px]">Coupon Code</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[150px]">Concession Type</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[100px]">Benefit</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[120px]">Min Order Value</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[110px]">Usage Limit</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[120px]">Expiry Date</th>
+                        <th className="px-6 py-3.5 text-right whitespace-nowrap min-w-[100px]">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1720,15 +1720,15 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs min-w-[950px]">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
-                        <th className="px-6 py-3.5">Client Details</th>
-                        <th className="px-6 py-3.5">Role &amp; Status</th>
-                        <th className="px-6 py-3.5">Order Count</th>
-                        <th className="px-6 py-3.5">Total Spent</th>
-                        <th className="px-6 py-3.5">Current Sales Agent</th>
-                        <th className="px-6 py-3.5 text-right">Assign / Reassign Agent</th>
+                        <th className="px-6 py-3.5 min-w-[220px]">Client Details</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[120px]">Role &amp; Status</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[110px]">Order Count</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[120px]">Total Spent</th>
+                        <th className="px-6 py-3.5 whitespace-nowrap min-w-[180px]">Current Sales Agent</th>
+                        <th className="px-6 py-3.5 text-right whitespace-nowrap min-w-[220px]">Assign / Reassign Agent</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
