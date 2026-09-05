@@ -1,70 +1,74 @@
-# Lumina Commerce - Next.js Frontend
+# Center Shopping - Next.js 16 Storefront & Portals
 
-Production-ready e-commerce frontend interface built with **Next.js 16 (App Router, JavaScript)**, **Tailwind CSS**, **Redux Toolkit (RTK Query)**, and **Socket.io Client** for real-time order lifecycle tracking.
-
-Designed using the **Lumina Commerce** design tokens with high-contrast surfaces, micro-animations, and mobile-ergonomic workflows.
+A modern, high-performance E-Commerce frontend built with **Next.js 16 (App Router)**, **Tailwind CSS**, **Redux Toolkit (RTK Query)**, **Firebase Authentication**, and **Socket.io Client** for real-time tracking.
 
 ---
 
-## 🌟 Core Features
+## 🌐 Live Application
 
-- **Storefront & Product Catalog**: Filter by category, real-time debounced search, sort by price/recency, and in-stock toggling.
-- **Multi-Variant Inventory Selector**: Live variant switching (size, color, storage) with dynamic pricing and remaining stock badges.
-- **Freshness & Expiry Guard**: Visible warning notices for perishable items and expiry dates.
-- **Cart & Dynamic Discount Engine**: Real-time coupon validation (`WELCOME10`, `FLAT50`, etc.) with subtotal eligibility and role restrictions.
-- **Concurrency-Protected Checkout**: 
-  - Submits unique client `Idempotency-Key` headers.
-  - Handles concurrent stock conflict rejections (`409 Conflict`) with clear user alerts when competing for the last item.
-  - Payment failure simulation toggle to test atomic transaction rollbacks.
-- **Real-Time Order Tracking**:
-  - Live visual progression stepper (`CONFIRMED` → `PROCESSING` → `SHIPPED` → `DELIVERED`).
-  - Powered by **Socket.io** (`ws://localhost:5000`) for live status updates without page reloads.
-- **Order Cancellation & Automatic Refunds**:
-  - Allows cancellation during `CONFIRMED` and `PROCESSING` states with automatic inventory replenishment and refund records.
-  - Hard guard blocking cancellation once an order is marked `SHIPPED` or `DELIVERED`.
-- **Operations Dashboard**:
-  - Admin & Sales Agent portal with real-time KPI cards (gross revenue, order counts, low-stock alerts).
-  - Status progression dropdown that broadcasts live updates to customers over WebSockets.
-  - Inline variant restock actions.
-- **1-Click Persona Login**:
-  - Quick persona switchers for rapid evaluation between `Admin`, `Sales Agent`, `Customer 1 (Alice)`, and `Customer 2 (Bob)`.
+- **Live URL**: [https://center-shopping.vercel.app](https://center-shopping.vercel.app)
+- **Backend API**: `http://72.61.246.61:5000/api/v1`
+- **Real-Time WebSocket**: `ws://72.61.246.61:5000`
 
 ---
 
-## 🛠️ Technology Stack
+## 🌟 Key Features
 
-- **Framework**: Next.js 16 (App Router, Pure JavaScript)
-- **Styling**: Tailwind CSS v4
-- **State Management & Data Fetching**: Redux Toolkit & RTK Query
-- **Real-Time WebSockets**: Socket.io Client (`socket.io-client`)
-- **Icons**: Lucide React (`lucide-react`)
-- **Effects**: Canvas Confetti (`canvas-confetti`)
+### 1. Consumer Storefront (`/`)
+- **Product Catalog**: Live search, category filtering, stock availability toggles, and sorting.
+- **Variant Selector**: Multi-variant lot picker (size, color, storage) with dynamic stock quantities.
+- **Cart & Discounts**: Promotional coupon engine with subtotal eligibility checking.
+- **Checkout & NMI Gateway**: Direct card payment processing and printable order receipts.
+
+### 2. Dedicated Sales Agent Console (`/agent`)
+- **Dark Sidebar Workspace**: Live status pill, quick promo link copier (`AGENTPROMO`), and KPI metrics.
+- **Client Roster**: Assigned customer accounts, historical GMV attribution, and 5% commission earnings.
+- **Order Monitoring**: Filter customer orders, inspection tools, and receipt generation.
+
+### 3. Administrator Console (`/admin`)
+- **Operations Center**: Real-time sales analytics, revenue graphs, and low-stock alerts.
+- **Product & Inventory Management**: Add/edit physical assets, manage stock lots, and track expiring products.
+- **Order Status Controller**: Live status transition stepper broadcasting updates to customers via WebSockets.
+- **Staff Management**: Assign sales agents to customer accounts and generate promotional vouchers.
+
+### 4. Real-Time Tracking & Google Auth
+- **Socket.io Live Updates**: Instant order lifecycle notifications without polling.
+- **Firebase Google OAuth**: One-click Google sign-in with automatic customer account creation and welcoming alerts.
 
 ---
 
-## 🚀 Getting Started
+## 👥 Demo Logins & Portals
+
+| Role | Email | Password | Dedicated Portal |
+|---|---|---|---|
+| 👑 **Administrator** | `admin@gmail.com` | `Password@123` | [`/admin`](https://center-shopping.vercel.app/admin) |
+| 💼 **Sales Agent** | `agent@gmail.com` | `Password@123` | [`/agent`](https://center-shopping.vercel.app/agent) |
+| 🛒 **Customer** | `customer@gmail.com` | `Password@123` | [`/login`](https://center-shopping.vercel.app/login) |
+
+---
+
+## 🛠️ Local Development
 
 ### 1. Prerequisites
-- Node.js `v20+` or `v22+`
-- Running backend API server on `http://localhost:5000`
+- Node.js `v18+` or `v20+`
 
-### 2. Environment Variables
-Create a `.env.local` file in the `frontend/` directory (optional, defaults to localhost:5000):
+### 2. Installation
+```bash
+cd frontend
+npm install
+```
+
+### 3. Environment Variables (`.env.local`)
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 ```
 
-### 3. Install Dependencies
-```bash
-npm install
-```
-
-### 4. Run Development Server
+### 4. Start Development Server
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 5. Production Build
 ```bash
