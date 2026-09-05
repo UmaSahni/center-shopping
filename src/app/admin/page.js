@@ -44,6 +44,7 @@ export default function AdminConsolePage() {
   const [showAddCouponModal, setShowAddCouponModal] = useState(false);
   const [showAddAgentModal, setShowAddAgentModal] = useState(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+  const [selectedAdminOrder, setSelectedAdminOrder] = useState(null);
   const [agentForm, setAgentForm] = useState({
     name: '',
     email: '',
@@ -203,6 +204,7 @@ export default function AdminConsolePage() {
     try {
       await updateOrderStatus({ orderId, status: newStatus }).unwrap();
       dispatch(showToast({ type: 'success', message: `Order #${orderId.slice(-6)} status set to ${newStatus}` }));
+      setSelectedAdminOrder((prev) => (prev && prev.id === orderId ? { ...prev, status: newStatus } : prev));
       refetchOrders();
       refetchStats();
     } catch (err) {
@@ -1062,13 +1064,14 @@ export default function AdminConsolePage() {
                             </select>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <Link
-                              href={`/orders/${order.id}`}
-                              className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors inline-flex items-center gap-1"
+                            <button
+                              type="button"
+                              onClick={() => setSelectedAdminOrder(order)}
+                              className="px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
                             >
                               Details
-                              <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                            </Link>
+                              <span className="material-symbols-outlined text-[14px]">visibility</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1495,13 +1498,14 @@ export default function AdminConsolePage() {
                             </select>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <Link
-                              href={`/orders/${order.id}`}
-                              className="px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1"
+                            <button
+                              type="button"
+                              onClick={() => setSelectedAdminOrder(order)}
+                              className="px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
                             >
                               View Order
-                              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                            </Link>
+                              <span className="material-symbols-outlined text-[14px]">visibility</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -2620,6 +2624,285 @@ export default function AdminConsolePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ADMIN ORDER DETAILS MODAL                                                 */}
+      {/* ========================================================================= */}
+      {selectedAdminOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
+          <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                  <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-montserrat font-bold text-base text-white tracking-tight">
+                      Order #{selectedAdminOrder.orderNumber || selectedAdminOrder.id?.slice(-6).toUpperCase()}
+                    </h2>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                      selectedAdminOrder.status === 'DELIVERED'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : selectedAdminOrder.status === 'SHIPPED'
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                        : selectedAdminOrder.status === 'PROCESSING'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : selectedAdminOrder.status === 'CONFIRMED'
+                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                        : selectedAdminOrder.status === 'CANCELLED'
+                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                        : 'bg-slate-700 text-slate-300'
+                    }`}>
+                      {selectedAdminOrder.status}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Placed on {formatDate(selectedAdminOrder.createdAt)} • ID: <span className="font-mono text-[10px]">{selectedAdminOrder.id}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700 cursor-pointer"
+                  title="Print Order Summary"
+                >
+                  <span className="material-symbols-outlined text-[15px]">print</span>
+                  <span className="hidden sm:inline">Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAdminOrder(null)}
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700">
+              
+              {/* Quick Status Control Bar */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-amber-600 text-[20px]">published_with_changes</span>
+                  <div>
+                    <span className="font-bold text-slate-900 block text-xs">Fulfillment Status Control</span>
+                    <span className="text-[11px] text-slate-500">Update order milestone to notify customer in real-time</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-slate-600">Change Status:</label>
+                  <select
+                    value={selectedAdminOrder.status}
+                    onChange={(e) => handleStatusChange(selectedAdminOrder.id, e.target.value)}
+                    className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-900 shadow-xs cursor-pointer outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  >
+                    <option value="PENDING">PENDING</option>
+                    <option value="CONFIRMED">CONFIRMED</option>
+                    <option value="PROCESSING">PROCESSING</option>
+                    <option value="SHIPPED">SHIPPED</option>
+                    <option value="DELIVERED">DELIVERED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 3-Column Info Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                {/* Customer Information */}
+                <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-2">
+                      <span className="material-symbols-outlined text-[14px] text-amber-600">person</span>
+                      Customer Profile
+                    </div>
+                    <p className="font-bold text-slate-900 text-sm">{selectedAdminOrder.user?.name || 'Customer'}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">{selectedAdminOrder.user?.email}</p>
+                    <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                      Role: {selectedAdminOrder.user?.role || 'CUSTOMER'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery & Shipping Address */}
+                <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-2">
+                      <span className="material-symbols-outlined text-[14px] text-blue-600">local_shipping</span>
+                      Delivery Destination
+                    </div>
+                    <div className="text-slate-700 text-xs leading-relaxed">
+                      {(() => {
+                        const rawAddr = selectedAdminOrder.shippingAddress;
+                        if (!rawAddr) return 'Standard Delivery Address';
+                        try {
+                          const parsed = typeof rawAddr === 'string' && (rawAddr.startsWith('{') || rawAddr.startsWith('[')) ? JSON.parse(rawAddr) : null;
+                          if (parsed) {
+                            return `${parsed.fullName || ''} ${parsed.address || ''}, ${parsed.city || ''}, ${parsed.state || ''} ${parsed.postalCode || ''} (Phone: ${parsed.phone || 'N/A'})`;
+                          }
+                          return rawAddr;
+                        } catch {
+                          return rawAddr;
+                        }
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Summary */}
+                <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-2">
+                      <span className="material-symbols-outlined text-[14px] text-emerald-600">credit_card</span>
+                      Payment Settlement
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Method:</span>
+                      <span className="font-bold text-slate-900 font-mono">
+                        {selectedAdminOrder.payment?.paymentMethod || selectedAdminOrder.paymentMethod || 'CARD / ON ACCOUNT'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-slate-500">Gateway Ref:</span>
+                      <span className="font-mono text-[10px] text-slate-600 truncate max-w-[140px]" title={selectedAdminOrder.payment?.transactionId || selectedAdminOrder.idempotencyKey}>
+                        {selectedAdminOrder.payment?.transactionId || selectedAdminOrder.idempotencyKey || 'CONFIRMED'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-slate-500">Status:</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                        {selectedAdminOrder.payment?.status || 'SUCCESS'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Order Items Table */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
+                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <h3 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-slate-500">inventory_2</span>
+                    Items Purchased ({selectedAdminOrder.items?.length || 0})
+                  </h3>
+                  <span className="text-slate-500 text-[11px] font-medium font-mono">Total Units: {selectedAdminOrder.items?.reduce((acc, it) => acc + (it.quantity || 1), 0) || 1}</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50/50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
+                        <th className="px-4 py-2.5">Item</th>
+                        <th className="px-4 py-2.5">Variant</th>
+                        <th className="px-4 py-2.5 text-right">Unit Price</th>
+                        <th className="px-4 py-2.5 text-center">Qty</th>
+                        <th className="px-4 py-2.5 text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {(selectedAdminOrder.items || []).map((it, idx) => {
+                        const title = it.productTitle || it.variant?.product?.title || 'Catalog Product';
+                        const variantName = it.variantTitle || it.variant?.title || 'Standard Lot';
+                        const img = getProductImage(title, it.variant?.product?.imageUrl);
+                        const price = Number(it.price || it.variant?.price || 0);
+                        const qty = it.quantity || 1;
+                        const subtotal = Number(it.subtotal || price * qty);
+
+                        return (
+                          <tr key={idx} className="hover:bg-slate-50/50 transition">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={img}
+                                  alt={title}
+                                  className="w-10 h-10 rounded-lg object-cover border border-slate-200 bg-white shrink-0"
+                                />
+                                <div>
+                                  <div className="font-bold text-slate-900 leading-snug">{title}</div>
+                                  <div className="text-[10px] text-slate-400 font-mono">SKU: {it.variant?.sku || it.variantId?.slice(0, 8) || 'N/A'}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600 font-medium">{variantName}</td>
+                            <td className="px-4 py-3 text-right font-mono text-slate-700">{formatPrice(price)}</td>
+                            <td className="px-4 py-3 text-center">
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">
+                                {qty}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">{formatPrice(subtotal)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Financial Breakdown Card */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="text-slate-500 text-xs">
+                  <p className="font-semibold text-slate-700">Financial Summary</p>
+                  <p className="text-[11px] text-slate-400">All prices include applicable GST &amp; complimentary shipping.</p>
+                </div>
+
+                <div className="w-full sm:w-64 space-y-1.5 text-xs">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Items Subtotal:</span>
+                    <span className="font-mono font-medium">{formatPrice(selectedAdminOrder.subtotal || selectedAdminOrder.totalAmount)}</span>
+                  </div>
+                  {Number(selectedAdminOrder.discountAmount) > 0 && (
+                    <div className="flex justify-between text-emerald-600">
+                      <span>Discount Concession:</span>
+                      <span className="font-mono font-medium">-{formatPrice(selectedAdminOrder.discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-slate-600">
+                    <span>Express Delivery:</span>
+                    <span className="font-medium text-emerald-600">Complimentary</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>GST (Goods &amp; Services Tax 3%):</span>
+                    <span className="font-mono font-medium">{formatPrice(Math.round(Number(selectedAdminOrder.totalAmount || 0) * 0.03))}</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-300 flex justify-between items-baseline font-bold text-slate-900">
+                    <span className="text-xs uppercase tracking-wider">Total Paid:</span>
+                    <span className="text-base font-extrabold text-slate-900 font-mono">
+                      {formatPrice(selectedAdminOrder.totalAmount)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
+              <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
+                <span>Admin Clearance Verified • Store Operations</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedAdminOrder(null)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs transition shadow-sm cursor-pointer"
+              >
+                Close Details
+              </button>
+            </div>
+
           </div>
         </div>
       )}
