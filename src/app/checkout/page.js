@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import { useGetCartQuery, useCheckoutMutation, useLoginMutation } from '../../redux/services/api.js';
+import { useGetCartQuery, useCheckoutMutation, useLoginMutation, useRemoveCartItemMutation } from '../../redux/services/api.js';
 import { removeActiveCoupon, showToast } from '../../redux/slices/cartSlice.js';
 import { setCredentials } from '../../redux/slices/authSlice.js';
 import { formatPrice } from '../../utils/helpers.js';
@@ -21,7 +21,17 @@ export default function CheckoutPage() {
 
   const [checkoutMutation, { isLoading: isSubmitting }] = useCheckoutMutation();
   const [loginMutation, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [removeCartItem, { isLoading: isRemovingItem }] = useRemoveCartItemMutation();
   const [submitError, setSubmitError] = useState('');
+
+  const handleRemoveItem = async (itemId, itemTitle) => {
+    try {
+      await removeCartItem(itemId).unwrap();
+      dispatch(showToast({ type: 'success', message: `Removed ${itemTitle || 'item'} from cart` }));
+    } catch (err) {
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to remove item from cart' }));
+    }
+  };
 
   const handleQuickDemoLogin = async () => {
     try {
@@ -464,7 +474,7 @@ export default function CheckoutPage() {
                     const isOutOfStock = item.variant?.stockQuantity !== undefined && item.variant?.stockQuantity <= 0;
 
                     return (
-                      <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
+                      <div key={item.id} className="py-2.5 flex items-start justify-between text-xs group">
                         <div className="flex items-center gap-2.5 min-w-0 pr-2">
                           <div className="w-10 h-12 bg-surface-subtle rounded border border-hairline p-0.5 flex items-center justify-center shrink-0">
                             {prod?.imageUrl ? (
@@ -474,7 +484,7 @@ export default function CheckoutPage() {
                             )}
                           </div>
                           <div className="truncate">
-                            <p className="font-bold text-text-secondary truncate">{prod?.title || 'Product Item'}</p>
+                            <p className="font-bold text-text-secondary truncate" title={prod?.title}>{prod?.title || 'Product Item'}</p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] text-text-muted">Qty: {qty}</span>
                               {isOutOfStock && (
@@ -485,9 +495,21 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         </div>
-                        <span className="font-mono font-bold text-text-primary shrink-0">
-                          {formatPrice(price * qty)}
-                        </span>
+                        <div className="flex flex-col items-end shrink-0 pl-2">
+                          <button
+                            type="button"
+                            disabled={isRemovingItem}
+                            onClick={() => handleRemoveItem(item.id, prod?.title)}
+                            title="Remove item from cart"
+                            className="p-1 rounded-md text-text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer flex items-center justify-center -mr-1 -mt-1 disabled:opacity-50"
+                            aria-label="Remove item"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">close</span>
+                          </button>
+                          <span className="font-mono font-bold text-text-primary mt-1">
+                            {formatPrice(price * qty)}
+                          </span>
+                        </div>
                       </div>
                     );
                   })
