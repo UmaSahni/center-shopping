@@ -18,7 +18,7 @@ export default function AccountPage() {
   const handleQuickDemoLogin = async () => {
     try {
       const res = await loginMutation({
-        email: 'customer@specbee.com',
+        email: 'customer@gmail.com',
         password: 'Password@123',
       }).unwrap();
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));

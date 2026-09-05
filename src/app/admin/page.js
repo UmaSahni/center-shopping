@@ -528,7 +528,7 @@ export default function AdminConsolePage() {
               <button
                 type="button"
                 disabled={isLoggingIn}
-                onClick={() => handleStaffLogin(null, 'admin@specbee.com', 'Password@123')}
+                onClick={() => handleStaffLogin(null, 'admin@gmail.com', 'Password@123')}
                 className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex flex-col justify-between"
               >
                 <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
@@ -541,7 +541,7 @@ export default function AdminConsolePage() {
               <button
                 type="button"
                 disabled={isLoggingIn}
-                onClick={() => handleStaffLogin(null, 'agent@specbee.com', 'Password@123')}
+                onClick={() => handleStaffLogin(null, 'agent@gmail.com', 'Password@123')}
                 className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex flex-col justify-between"
               >
                 <div className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
@@ -564,7 +564,7 @@ export default function AdminConsolePage() {
                 required
                 value={adminLoginForm.email}
                 onChange={(e) => setAdminLoginForm((prev) => ({ ...prev, email: e.target.value }))}
-                placeholder="admin@specbee.com"
+                placeholder="admin@gmail.com"
                 className="w-full px-3.5 py-2 rounded-lg bg-slate-900/80 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500 transition"
               />
             </div>
