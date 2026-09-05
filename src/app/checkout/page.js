@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { useGetCartQuery, useCheckoutMutation, useLoginMutation, useRemoveCartItemMutation } from '../../redux/services/api.js';
 import { removeActiveCoupon, showToast } from '../../redux/slices/cartSlice.js';
-import { setCredentials } from '../../redux/slices/authSlice.js';
+import { setCredentials, logout } from '../../redux/slices/authSlice.js';
 import { formatPrice } from '../../utils/helpers.js';
 import Link from 'next/link';
 
@@ -210,6 +210,13 @@ export default function CheckoutPage() {
         placedAt: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
       });
     } catch (err) {
+      if (err?.data?.errorCode === 'USER_NOT_FOUND' || err?.status === 401) {
+        dispatch(logout());
+        const errMsg = 'Session expired or user account not found. Please log in again to complete checkout.';
+        setSubmitError(errMsg);
+        dispatch(showToast({ type: 'error', message: errMsg }));
+        return;
+      }
       const errMsg = err?.data?.message || err?.message || 'Order processing failed. Please try again.';
       setSubmitError(errMsg);
       dispatch(showToast({ type: 'error', message: errMsg }));

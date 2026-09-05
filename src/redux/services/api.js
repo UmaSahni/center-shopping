@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { logout } from '../slices/authSlice.js';
 
 // When running in browser on Vercel (or any non-localhost host), always use same-origin relative /api/v1
 // Next.js rewrites in next.config.mjs automatically proxy /api/v1 to the live VPS backend
@@ -19,18 +20,31 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: API_BASE_URL,
+  prepareHeaders: (headers, { getState }) => {
+    const token = getState().auth?.token;
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+  const result = await rawBaseQuery(args, api, extraOptions);
+  if (result?.error && result?.error.status === 401) {
+    const errCode = result.error.data?.errorCode;
+    if (errCode === 'USER_NOT_FOUND' || errCode === 'INVALID_TOKEN' || errCode === 'TOKEN_EXPIRED') {
+      api.dispatch(logout());
+    }
+  }
+  return result;
+};
+
 export const ecomApi = createApi({
   reducerPath: 'ecomApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Product', 'Cart', 'Order', 'Coupon', 'AdminStats', 'AdminCustomers', 'AdminSalesAgents'],
   endpoints: (builder) => ({
     // Auth
