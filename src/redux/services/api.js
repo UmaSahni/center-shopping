@@ -1,6 +1,23 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+// When running in browser on Vercel (or any non-localhost host), always use same-origin relative /api/v1
+// Next.js rewrites in next.config.mjs automatically proxy /api/v1 to the live VPS backend
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!isLocalhost) {
+      if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+        return envUrl;
+      }
+      return '/api/v1';
+    }
+    return envUrl || '/api/v1';
+  }
+  return process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const ecomApi = createApi({
   reducerPath: 'ecomApi',
