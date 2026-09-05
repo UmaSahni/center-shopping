@@ -32,15 +32,31 @@ export default function LoginPage() {
       }).unwrap();
 
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-      dispatch(showToast({ type: 'success', message: `Welcome to Center Shopping, ${res.data.user.name}!` }));
+
+      const welcomeMessage = res.data.isNewUser
+        ? `Account created! Welcome to Center Shopping, ${res.data.user.name}!`
+        : `Welcome back, ${res.data.user.name}!`;
+
+      dispatch(showToast({ type: 'success', message: welcomeMessage }));
       router.push('/');
     } catch (err) {
       console.error('Google Auth Error:', err);
-      if (err?.code !== 'auth/popup-closed-by-user') {
-        const msg = err?.data?.message || err?.message || 'Google sign-in failed. Please try again.';
-        setErrorMsg(msg);
-        dispatch(showToast({ type: 'error', message: msg }));
+      let userFriendlyMsg = 'Google sign-in could not be completed. Please try again or use email.';
+
+      if (err?.code === 'auth/unauthorized-domain') {
+        userFriendlyMsg = 'Google Sign-In is pending domain authorization in Firebase (center-shopping.vercel.app).';
+      } else if (err?.code === 'auth/popup-closed-by-user') {
+        userFriendlyMsg = 'Google sign-in window was closed.';
+      } else if (err?.code === 'auth/popup-blocked') {
+        userFriendlyMsg = 'Pop-up window was blocked by your browser. Please allow pop-ups for this site.';
+      } else if (err?.data?.message) {
+        userFriendlyMsg = err.data.message;
+      } else if (err?.message) {
+        userFriendlyMsg = err.message;
       }
+
+      setErrorMsg(userFriendlyMsg);
+      dispatch(showToast({ type: 'error', message: userFriendlyMsg }));
     }
   };
 
