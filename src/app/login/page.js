@@ -18,10 +18,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [quickLoggingInRole, setQuickLoggingInRole] = useState(null); // 'CUSTOMER' | 'AGENT' | 'ADMIN' | null
+  const [accountNotFoundPrompt, setAccountNotFoundPrompt] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
+    setAccountNotFoundPrompt(false);
     try {
       const googleUser = await signInWithGoogle();
       const res = await googleAuthMutation({
@@ -29,21 +30,20 @@ export default function LoginPage() {
         name: googleUser.name,
         avatarUrl: googleUser.avatarUrl,
         idToken: googleUser.idToken,
+        mode: 'login',
       }).unwrap();
 
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-
-      const welcomeMessage = res.data.isNewUser
-        ? `Account created! Welcome to Center Shopping, ${res.data.user.name}!`
-        : `Welcome back, ${res.data.user.name}!`;
-
-      dispatch(showToast({ type: 'success', message: welcomeMessage }));
+      dispatch(showToast({ type: 'success', message: `Welcome back, ${res.data.user.name}!` }));
       router.push('/');
     } catch (err) {
       console.error('Google Auth Error:', err);
       let userFriendlyMsg = 'Google sign-in could not be completed. Please try again or use email.';
 
-      if (err?.code === 'auth/unauthorized-domain') {
+      if (err?.data?.errorCode === 'ACCOUNT_NOT_FOUND' || err?.status === 404) {
+        userFriendlyMsg = 'No account found with this Google email. Please Sign Up first to create your account.';
+        setAccountNotFoundPrompt(true);
+      } else if (err?.code === 'auth/unauthorized-domain') {
         userFriendlyMsg = 'Google Sign-In is pending domain authorization in Firebase (center-shopping.vercel.app).';
       } else if (err?.code === 'auth/popup-closed-by-user') {
         userFriendlyMsg = 'Google sign-in window was closed.';
@@ -179,9 +179,24 @@ export default function LoginPage() {
             </div>
 
             {errorMsg && (
-              <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">error</span>
-                <span>{errorMsg}</span>
+              <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex flex-col gap-2 shadow-2xs">
+                <div className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-amber-600 shrink-0 mt-0.5">info</span>
+                  <span className="leading-snug">{errorMsg}</span>
+                </div>
+                {accountNotFoundPrompt && (
+                  <div className="pt-1 border-t border-amber-200/60 flex items-center justify-between">
+                    <span className="text-[11px] text-amber-800">Ready to create your account?</span>
+                    <button
+                      type="button"
+                      onClick={() => router.push('/register')}
+                      className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[11px] rounded-lg transition shadow-2xs cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Sign Up with Google</span>
+                      <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

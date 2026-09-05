@@ -23,9 +23,11 @@ export default function RegisterPage() {
     role: 'CUSTOMER',
   });
   const [errorMsg, setErrorMsg] = useState('');
+  const [accountExistsPrompt, setAccountExistsPrompt] = useState(false);
 
   const handleGoogleSignUp = async () => {
     setErrorMsg('');
+    setAccountExistsPrompt(false);
     try {
       const googleUser = await signInWithGoogle();
       const res = await googleAuthMutation({
@@ -33,21 +35,20 @@ export default function RegisterPage() {
         name: googleUser.name,
         avatarUrl: googleUser.avatarUrl,
         idToken: googleUser.idToken,
+        mode: 'register',
       }).unwrap();
 
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
-
-      const welcomeMessage = res.data.isNewUser
-        ? `Account created! Welcome to Center Shopping, ${res.data.user.name}!`
-        : `Welcome back, ${res.data.user.name}!`;
-
-      dispatch(showToast({ type: 'success', message: welcomeMessage }));
+      dispatch(showToast({ type: 'success', message: `Welcome to Center Shopping, ${res.data.user.name}!` }));
       router.push('/');
     } catch (err) {
       console.error('Google Auth Error:', err);
       let userFriendlyMsg = 'Google sign-up could not be completed. Please try again or use email registration.';
 
-      if (err?.code === 'auth/unauthorized-domain') {
+      if (err?.data?.errorCode === 'ACCOUNT_ALREADY_EXISTS' || err?.status === 409) {
+        userFriendlyMsg = 'An account with this Google email already exists. Please Sign In.';
+        setAccountExistsPrompt(true);
+      } else if (err?.code === 'auth/unauthorized-domain') {
         userFriendlyMsg = 'Google Sign-Up is pending domain authorization in Firebase (center-shopping.vercel.app).';
       } else if (err?.code === 'auth/popup-closed-by-user') {
         userFriendlyMsg = 'Google sign-up window was closed.';
@@ -160,9 +161,24 @@ export default function RegisterPage() {
             </div>
 
             {errorMsg && (
-              <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">error</span>
-                <span>{errorMsg}</span>
+              <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex flex-col gap-2 shadow-2xs">
+                <div className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-amber-600 shrink-0 mt-0.5">info</span>
+                  <span className="leading-snug">{errorMsg}</span>
+                </div>
+                {accountExistsPrompt && (
+                  <div className="pt-1 border-t border-amber-200/60 flex items-center justify-between">
+                    <span className="text-[11px] text-amber-800">Already have an account?</span>
+                    <button
+                      type="button"
+                      onClick={() => router.push('/login')}
+                      className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[11px] rounded-lg transition shadow-2xs cursor-pointer flex items-center gap-1"
+                    >
+                      <span>Go to Sign In</span>
+                      <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
