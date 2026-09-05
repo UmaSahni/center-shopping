@@ -14,6 +14,10 @@ import {
   useCreateProductMutation,
   useUpdateProductMutation,
   useLoginMutation,
+  useGetAdminCustomersQuery,
+  useGetAdminSalesAgentsQuery,
+  useAssignCustomerAgentMutation,
+  useCreateSalesAgentMutation,
 } from '../../redux/services/api.js';
 import { showToast } from '../../redux/slices/cartSlice.js';
 import { setCredentials, logout } from '../../redux/slices/authSlice.js';
@@ -38,6 +42,14 @@ export default function AdminConsolePage() {
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
   const [showAddCouponModal, setShowAddCouponModal] = useState(false);
+  const [showAddAgentModal, setShowAddAgentModal] = useState(false);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+  const [agentForm, setAgentForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [assigningCustomerId, setAssigningCustomerId] = useState(null);
   const [mounted, setMounted] = useState(false);
 
   // Admin & Staff Login Form State
@@ -49,6 +61,13 @@ export default function AdminConsolePage() {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    }
   }, []);
 
 
@@ -91,7 +110,7 @@ export default function AdminConsolePage() {
   );
 
   const { data: productsData, isLoading: isProductsLoading, refetch: refetchProducts } = useGetProductsQuery(
-    { limit: 100 },
+    { limit: 2000 },
     { skip: !isStaff }
   );
 
@@ -99,12 +118,24 @@ export default function AdminConsolePage() {
     skip: !isStaff,
   });
 
+  const { data: customersData, isLoading: isCustomersLoading, refetch: refetchCustomers } = useGetAdminCustomersQuery(
+    customerSearchQuery,
+    { skip: !isStaff }
+  );
+
+  const { data: salesAgentsData, isLoading: isSalesAgentsLoading, refetch: refetchSalesAgents } = useGetAdminSalesAgentsQuery(
+    undefined,
+    { skip: !isStaff }
+  );
+
   // Redux Mutations
   const [updateOrderStatus, { isLoading: isUpdatingStatus }] = useUpdateOrderStatusMutation();
   const [updateStock, { isLoading: isUpdatingStock }] = useUpdateStockMutation();
   const [createCoupon, { isLoading: isCreatingCoupon }] = useCreateCouponMutation();
   const [createProduct, { isLoading: isCreatingProduct }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdatingProduct }] = useUpdateProductMutation();
+  const [assignCustomerAgent, { isLoading: isAssigningAgent }] = useAssignCustomerAgentMutation();
+  const [createSalesAgent, { isLoading: isCreatingAgent }] = useCreateSalesAgentMutation();
 
   // Listen to live socket events for orders
   useEffect(() => {
@@ -298,6 +329,40 @@ export default function AdminConsolePage() {
     }
   };
 
+  const handleAssignAgent = async (customerId, salesAgentId) => {
+    setAssigningCustomerId(customerId);
+    try {
+      await assignCustomerAgent({
+        customerId,
+        salesAgentId: salesAgentId === '' ? null : salesAgentId,
+      }).unwrap();
+      dispatch(showToast({ type: 'success', message: 'Sales Agent assignment updated successfully!' }));
+      refetchCustomers();
+      refetchSalesAgents();
+    } catch (err) {
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to update agent assignment' }));
+    } finally {
+      setAssigningCustomerId(null);
+    }
+  };
+
+  const handleCreateAgent = async (e) => {
+    e.preventDefault();
+    try {
+      await createSalesAgent({
+        name: agentForm.name.trim(),
+        email: agentForm.email.trim(),
+        password: agentForm.password,
+      }).unwrap();
+      dispatch(showToast({ type: 'success', message: `Sales Agent "${agentForm.name}" onboarded successfully!` }));
+      setAgentForm({ name: '', email: '', password: '' });
+      setShowAddAgentModal(false);
+      refetchSalesAgents();
+    } catch (err) {
+      dispatch(showToast({ type: 'error', message: err?.data?.message || 'Failed to onboard sales agent' }));
+    }
+  };
+
   // Safe data unnesting
   const rawProducts = Array.isArray(productsData?.data)
     ? productsData.data
@@ -323,21 +388,61 @@ export default function AdminConsolePage() {
     ? couponsData.coupons
     : [];
 
+  const rawCustomers = Array.isArray(customersData?.data)
+    ? customersData.data
+    : Array.isArray(customersData)
+    ? customersData
+    : [];
+
+  const rawSalesAgents = Array.isArray(salesAgentsData?.data)
+    ? salesAgentsData.data
+    : Array.isArray(salesAgentsData)
+    ? salesAgentsData
+    : [];
+
   const stats = statsData?.data || statsData || {};
 
-  // Filtered products
+  // Filtered products (matches title, description, category, variant SKU, variant title, and multi-word terms)
   const filteredProducts = rawProducts.filter((p) => {
     const catName = typeof p.category === 'string' ? p.category : p.category?.name || '';
-    const matchesSearch = searchQuery
-      ? p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        catName.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
     const matchesCat =
       productCategoryFilter === 'ALL' ||
       catName.toLowerCase().includes(productCategoryFilter.toLowerCase());
-    return matchesSearch && matchesCat;
+
+    if (!matchesCat) return false;
+    if (!searchQuery || !searchQuery.trim()) return true;
+
+    const queryLower = searchQuery.trim().toLowerCase();
+    const queryWords = queryLower.split(/\s+/).filter(Boolean);
+
+    const variantsText = (p.variants || [])
+      .map((v) => `${v.title || ''} ${v.sku || ''}`)
+      .join(' ')
+      .toLowerCase();
+
+    const fullBlob = `${p.title || ''} ${p.description || ''} ${catName} ${variantsText}`.toLowerCase();
+
+    // 1. Direct match
+    if (fullBlob.includes(queryLower)) return true;
+
+    // 2. All tokens present
+    return queryWords.every((w) => fullBlob.includes(w));
   });
+
+  // Product Catalog Pagination State (limit = 10)
+  const [productPage, setProductPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 10;
+
+  // Reset pagination to page 1 on search or category filter change
+  useEffect(() => {
+    setProductPage(1);
+  }, [searchQuery, productCategoryFilter]);
+
+  const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const paginatedProducts = filteredProducts.slice(
+    (productPage - 1) * PRODUCTS_PER_PAGE,
+    productPage * PRODUCTS_PER_PAGE
+  );
 
   // Unique categories for filter dropdown
   const categoriesList = Array.from(
@@ -382,7 +487,12 @@ export default function AdminConsolePage() {
 
           {/* Logo & Header */}
           <div className="flex items-center gap-3 mb-6">
-            <img src="/logo.png" alt="Center Shopping Logo" className="h-10 w-auto object-contain rounded" />
+            <img
+              src="/logo.png"
+              alt="Center Shopping Logo"
+              className="h-10 w-auto object-contain rounded brightness-0 invert"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
             <div>
               <h1 className="font-headline-sm font-bold text-lg text-white tracking-tight uppercase">Center Shopping</h1>
               <p className="font-label-caps text-[10px] text-[#F59E0B] tracking-wider uppercase font-semibold">
@@ -509,7 +619,8 @@ export default function AdminConsolePage() {
             <img
               src="/logo.png"
               alt="Center Shopping"
-              className="h-10 w-auto object-contain bg-white/10 p-1.5 rounded-lg"
+              className="w-44 h-auto max-h-20 object-contain brightness-0 invert"
+              style={{ filter: 'brightness(0) invert(1)' }}
             />
           </div>
 
@@ -524,9 +635,9 @@ export default function AdminConsolePage() {
               { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
               { id: 'products', label: 'Products', icon: 'inventory_2', badge: rawProducts.length || '12' },
               { id: 'orders', label: 'Orders', icon: 'shopping_bag', badge: rawOrders.length || '0' },
-              { id: 'customers', label: 'Customers', icon: 'group' },
-              { id: 'coupons', label: 'Coupons', icon: 'confirmation_number', badge: rawCoupons.length || '2' },
-              { id: 'sales-agents', label: 'Sales Agents', icon: 'badge' },
+              { id: 'customers', label: 'Customers', icon: 'group', badge: rawCustomers.length },
+              { id: 'coupons', label: 'Coupons', icon: 'confirmation_number', badge: rawCoupons.length },
+              { id: 'sales-agents', label: 'Sales Agents', icon: 'badge', badge: rawSalesAgents.length },
               { id: 'reports', label: 'Reports', icon: 'query_stats' },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
@@ -1072,7 +1183,7 @@ export default function AdminConsolePage() {
                   </select>
                 </div>
                 <div className="text-xs text-slate-500 font-medium">
-                  Showing <span className="font-bold text-slate-900">{filteredProducts.length}</span> products
+                  Showing <span className="font-bold text-slate-900">{filteredProducts.length === 0 ? 0 : (productPage - 1) * PRODUCTS_PER_PAGE + 1}</span>–<span className="font-bold text-slate-900">{Math.min(productPage * PRODUCTS_PER_PAGE, filteredProducts.length)}</span> of <span className="font-bold text-slate-900">{filteredProducts.length}</span> products
                 </div>
               </div>
 
@@ -1091,7 +1202,7 @@ export default function AdminConsolePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filteredProducts.map((prod) => {
+                      {paginatedProducts.map((prod) => {
                         const totalStock = prod.variants?.reduce((sum, v) => sum + (v.stockQuantity || 0), 0) ?? 0;
                         const mainVariant = prod.variants?.[0];
                         const price = parseFloat(mainVariant?.price || prod.basePrice || 0);
@@ -1164,13 +1275,13 @@ export default function AdminConsolePage() {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => openEditModal(prod)}
+                                <Link
+                                  href={`/admin/products/${prod.id}/edit`}
                                   className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200 rounded-lg text-xs transition-colors inline-flex items-center gap-1"
                                 >
                                   <span className="material-symbols-outlined text-[14px]">edit_note</span>
                                   Edit Details
-                                </button>
+                                </Link>
                                 <Link
                                   href={`/products/${prod.slug || prod.id}`}
                                   target="_blank"
@@ -1186,6 +1297,81 @@ export default function AdminConsolePage() {
                       })}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Modern Pagination Controls Bar (limit = 10) */}
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                  <div className="text-slate-500">
+                    Page <span className="font-bold text-slate-800">{productPage}</span> of <span className="font-bold text-slate-800">{totalProductPages}</span>
+                    <span className="ml-2 text-slate-400">({filteredProducts.length} total • 10 per page)</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {/* Previous Page Button */}
+                    <button
+                      type="button"
+                      disabled={productPage <= 1}
+                      onClick={() => setProductPage((p) => Math.max(1, p - 1))}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 shadow-2xs"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">chevron_left</span>
+                      <span>Prev</span>
+                    </button>
+
+                    {/* Dynamic Page Number Buttons */}
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalProductPages }, (_, idx) => idx + 1)
+                        .filter((pg) => {
+                          return (
+                            pg === 1 ||
+                            pg === totalProductPages ||
+                            Math.abs(pg - productPage) <= 2
+                          );
+                        })
+                        .reduce((acc, pg, idx, arr) => {
+                          if (idx > 0 && pg - arr[idx - 1] > 1) {
+                            acc.push({ type: 'ellipsis', key: `ellipsis-${pg}` });
+                          }
+                          acc.push({ type: 'page', page: pg, key: `page-${pg}` });
+                          return acc;
+                        }, [])
+                        .map((item) => {
+                          if (item.type === 'ellipsis') {
+                            return (
+                              <span key={item.key} className="px-1.5 text-slate-400 select-none">
+                                ...
+                              </span>
+                            );
+                          }
+                          const isCurrent = item.page === productPage;
+                          return (
+                            <button
+                              key={item.key}
+                              type="button"
+                              onClick={() => setProductPage(item.page)}
+                              className={`min-w-[32px] h-8 rounded-lg font-bold text-xs transition-all flex items-center justify-center ${
+                                isCurrent
+                                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              {item.page}
+                            </button>
+                          );
+                        })}
+                    </div>
+
+                    {/* Next Page Button */}
+                    <button
+                      type="button"
+                      disabled={productPage >= totalProductPages}
+                      onClick={() => setProductPage((p) => Math.min(totalProductPages, p + 1))}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 shadow-2xs"
+                    >
+                      <span>Next</span>
+                      <span className="material-symbols-outlined text-[15px]">chevron_right</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1436,51 +1622,220 @@ export default function AdminConsolePage() {
           {/* TAB 5: CUSTOMERS */}
           {activeTab === 'customers' && (
             <div className="space-y-8 animate-fadeIn">
-              <div>
-                <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight">
-                  Sovereign Client Directory
-                </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Institutional accounts, verified KYC status, and client purchase history.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight">
+                    Client Directory &amp; Sales Agent Assignment
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Live client accounts, purchase volume, and real-time sales agent assignment with load-balancing.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[18px]">
+                      search
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search clients by name or email..."
+                      value={customerSearchQuery}
+                      onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                      className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-500 w-64 shadow-2xs"
+                    />
+                    {customerSearchQuery && (
+                      <button
+                        onClick={() => setCustomerSearchQuery('')}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => refetchCustomers()}
+                    className="p-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600 transition"
+                    title="Refresh client list"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">refresh</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
-                <div className="space-y-4">
-                  {[
-                    { name: 'Admin Officer', email: 'admin@specbee.com', role: 'SUPER_ADMIN', spend: '₹24,80,000', orders: 12, kyc: 'VERIFIED' },
-                    { name: 'Sovereign Patron', email: 'customer@specbee.com', role: 'CLIENT', spend: '₹6,45,000', orders: 4, kyc: 'VERIFIED' },
-                    { name: 'Senior Sales Agent', email: 'agent@specbee.com', role: 'SALES_AGENT', spend: '₹12,20,000', orders: 8, kyc: 'VERIFIED' },
-                  ].map((cust, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:border-slate-300 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-sm">
-                          {cust.name[0]}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">{cust.name}</h4>
-                          <p className="text-xs text-slate-400">{cust.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6 text-xs">
-                        <div>
-                          <span className="text-slate-400 block text-[10px] uppercase">Role</span>
-                          <span className="font-bold text-slate-700">{cust.role}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block text-[10px] uppercase">Orders</span>
-                          <span className="font-bold text-slate-900">{cust.orders} Orders</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block text-[10px] uppercase">Total Volume</span>
-                          <span className="font-bold text-amber-600">{cust.spend}</span>
-                        </div>
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {cust.kyc}
-                        </span>
-                      </div>
+              {/* 4 Client Overview Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {[
+                  {
+                    label: 'Total Registered Clients',
+                    val: rawCustomers.length,
+                    sub: 'Active consumer accounts',
+                    icon: 'group',
+                    color: 'text-blue-700 bg-blue-50',
+                  },
+                  {
+                    label: 'Assigned to Sales Agents',
+                    val: rawCustomers.filter((c) => c.salesAgentId).length,
+                    sub: 'Dedicated agent support',
+                    icon: 'support_agent',
+                    color: 'text-emerald-700 bg-emerald-50',
+                  },
+                  {
+                    label: 'Awaiting Agent Assignment',
+                    val: rawCustomers.filter((c) => !c.salesAgentId).length,
+                    sub: 'Eligible for auto-assignment',
+                    icon: 'person_search',
+                    color: 'text-amber-700 bg-amber-50',
+                  },
+                  {
+                    label: 'Total Client Spend',
+                    val: formatPrice(rawCustomers.reduce((acc, c) => acc + (Number(c.totalSpent) || 0), 0)),
+                    sub: 'Cumulative customer volume',
+                    icon: 'payments',
+                    color: 'text-purple-700 bg-purple-50',
+                  },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">{stat.label}</p>
+                      <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">{stat.val}</h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{stat.sub}</p>
                     </div>
-                  ))}
+                    <div className={`p-3 rounded-2xl ${stat.color}`}>
+                      <span className="material-symbols-outlined text-[22px]">{stat.icon}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Customers Table with Sales Agent Assignment Dropdown */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px] text-amber-600">manage_accounts</span>
+                    <h3 className="text-sm font-bold text-slate-900">Client Directory &amp; Dedicated Agent Control</h3>
+                  </div>
+                  <span className="text-xs text-slate-400">
+                    Showing {rawCustomers.length} {rawCustomers.length === 1 ? 'client' : 'clients'}
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/60 uppercase text-[10px] tracking-wider">
+                        <th className="px-6 py-3.5">Client Details</th>
+                        <th className="px-6 py-3.5">Role &amp; Status</th>
+                        <th className="px-6 py-3.5">Order Count</th>
+                        <th className="px-6 py-3.5">Total Spent</th>
+                        <th className="px-6 py-3.5">Current Sales Agent</th>
+                        <th className="px-6 py-3.5 text-right">Assign / Reassign Agent</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {rawCustomers.map((cust) => {
+                        const isAssigningThis = assigningCustomerId === cust.id;
+                        return (
+                          <tr key={cust.id} className="hover:bg-slate-50/80 transition-colors">
+                            {/* Client Details */}
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-sm shrink-0">
+                                  {cust.name ? cust.name[0].toUpperCase() : 'C'}
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-slate-900 text-sm leading-tight">{cust.name}</h4>
+                                  <p className="text-xs text-slate-400">{cust.email}</p>
+                                  <p className="text-[10px] text-slate-400 mt-0.5">
+                                    Joined {cust.createdAt ? formatDate(cust.createdAt) : 'Recently'}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Role & Status */}
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200">
+                                  {cust.role}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-[12px]">verified</span>
+                                  Verified
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Orders */}
+                            <td className="px-6 py-4">
+                              <span className="font-bold text-slate-900 text-xs">
+                                {cust.orderCount || (cust.orders ? cust.orders.length : 0)} Orders
+                              </span>
+                            </td>
+
+                            {/* Total Spent */}
+                            <td className="px-6 py-4">
+                              <span className="font-bold text-amber-600 font-montserrat text-xs">
+                                {formatPrice(cust.totalSpent || 0)}
+                              </span>
+                            </td>
+
+                            {/* Current Sales Agent */}
+                            <td className="px-6 py-4">
+                              {cust.salesAgent ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-[10px]">
+                                    {cust.salesAgent.name[0]}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-800 text-xs leading-tight">
+                                      {cust.salesAgent.name}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400">{cust.salesAgent.email}</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                                  Unassigned
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Assign / Reassign Dropdown */}
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                {isAssigningThis && (
+                                  <span className="material-symbols-outlined animate-spin text-[16px] text-amber-500">
+                                    progress_activity
+                                  </span>
+                                )}
+                                <select
+                                  value={cust.salesAgentId || ''}
+                                  disabled={isAssigningThis}
+                                  onChange={(e) => handleAssignAgent(cust.id, e.target.value)}
+                                  className="px-3 py-1.5 bg-white border border-slate-300 hover:border-amber-500 focus:border-amber-500 rounded-lg text-xs font-medium text-slate-800 outline-none transition shadow-2xs disabled:opacity-50"
+                                >
+                                  <option value="">— Unassigned (Auto-Assign) —</option>
+                                  {rawSalesAgents.map((agent) => (
+                                    <option key={agent.id} value={agent.id}>
+                                      {agent.name} ({agent.assignedCustomerCount || 0} clients)
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {rawCustomers.length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-12 text-center text-slate-400 text-xs">
+                            {isCustomersLoading ? 'Loading client accounts...' : 'No customer accounts found.'}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1489,31 +1844,177 @@ export default function AdminConsolePage() {
           {/* TAB 6: SALES AGENTS */}
           {activeTab === 'sales-agents' && (
             <div className="space-y-8 animate-fadeIn">
-              <div>
-                <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight">
-                  Sales Agent Ledger & Commissions
-                </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Monitor partner agent referral links, attributed order sales, and commission disbursements.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold font-montserrat text-slate-900 tracking-tight">
+                    Sales Agent Ledger &amp; Load Balancing
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Monitor active sales agents, customer allocation, attributed sales, and commission volume.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowAddAgentModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md shadow-amber-500/20 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">person_add</span>
+                    <span>+ Onboard Sales Agent</span>
+                  </button>
+                  <button
+                    onClick={() => refetchSalesAgents()}
+                    className="p-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600 transition"
+                    title="Refresh sales agents"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">refresh</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                  <p className="text-xs text-slate-400 font-medium">Total Agent Commissions</p>
-                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">₹1,48,500</h3>
-                  <p className="text-[11px] text-emerald-600 font-medium mt-1">10% standard rate</p>
-                </div>
+              {/* 4 Agent Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                   <p className="text-xs text-slate-400 font-medium">Active Sales Agents</p>
-                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">3 Agents</h3>
-                  <p className="text-[11px] text-slate-400 mt-1">Directly attributed</p>
+                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">
+                    {rawSalesAgents.length} Agents
+                  </h3>
+                  <p className="text-[11px] text-emerald-600 font-medium mt-1">Ready for auto-assignment</p>
                 </div>
+
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <p className="text-xs text-slate-400 font-medium">Total Clients Assigned</p>
+                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">
+                    {rawSalesAgents.reduce((sum, a) => sum + (a.assignedCustomerCount || 0), 0)} Clients
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-1">Distributed across roster</p>
+                </div>
+
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                   <p className="text-xs text-slate-400 font-medium">Attributed Orders</p>
-                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">16 Sales</h3>
-                  <p className="text-[11px] text-slate-400 mt-1">₹14,85,000 Gross Volume</p>
+                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">
+                    {rawSalesAgents.reduce((sum, a) => sum + (a.attributedOrderCount || 0), 0)} Orders
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-1">From assigned customer base</p>
                 </div>
+
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <p className="text-xs text-slate-400 font-medium">Attributed Gross Volume</p>
+                  <h3 className="text-2xl font-bold font-montserrat text-slate-900 mt-1">
+                    {formatPrice(rawSalesAgents.reduce((sum, a) => sum + (a.totalAttributedSales || 0), 0))}
+                  </h3>
+                  <p className="text-[11px] text-emerald-600 font-medium mt-1">Total revenue generated</p>
+                </div>
+              </div>
+
+              {/* Sales Agents Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {rawSalesAgents.map((agent) => (
+                  <div
+                    key={agent.id}
+                    className="bg-white border border-slate-200/80 hover:border-amber-400/60 rounded-2xl p-6 shadow-sm flex flex-col justify-between transition-all"
+                  >
+                    <div>
+                      {/* Agent Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-base shrink-0">
+                            {agent.name ? agent.name[0].toUpperCase() : 'A'}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-base leading-tight">{agent.name}</h4>
+                            <p className="text-xs text-slate-400">{agent.email}</p>
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200 mt-1">
+                              Sales Agent
+                            </span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Active
+                        </span>
+                      </div>
+
+                      {/* Performance Metrics */}
+                      <div className="grid grid-cols-3 gap-2 mt-5 p-3 bg-slate-50 rounded-xl text-center border border-slate-100">
+                        <div>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase">Clients</p>
+                          <p className="text-base font-bold text-slate-900 mt-0.5">
+                            {agent.assignedCustomerCount || 0}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase">Orders</p>
+                          <p className="text-base font-bold text-slate-900 mt-0.5">
+                            {agent.attributedOrderCount || 0}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase">Volume</p>
+                          <p className="text-xs font-bold text-amber-600 mt-1 font-montserrat">
+                            {formatPrice(agent.totalAttributedSales || 0)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Customer Roster Preview */}
+                      <div className="mt-4">
+                        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                          <span>Assigned Clients</span>
+                          <span className="text-slate-400 font-normal">
+                            ({(agent.assignedCustomers || []).length})
+                          </span>
+                        </p>
+
+                        {agent.assignedCustomers && agent.assignedCustomers.length > 0 ? (
+                          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                            {agent.assignedCustomers.map((cust) => (
+                              <div
+                                key={cust.id}
+                                className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-100 text-xs"
+                              >
+                                <div className="truncate mr-2">
+                                  <p className="font-semibold text-slate-800 truncate">{cust.name}</p>
+                                  <p className="text-[10px] text-slate-400 truncate">{cust.email}</p>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <span className="text-[11px] font-bold text-slate-700 block">
+                                    {cust.orderCount || 0} orders
+                                  </span>
+                                  <span className="text-[10px] font-bold text-amber-600 block">
+                                    {formatPrice(cust.totalSpent || 0)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-400 italic py-2">
+                            No clients currently assigned. Eligible for next automated assignment.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Onboarded: {agent.createdAt ? formatDate(agent.createdAt) : 'Recently'}</span>
+                      <button
+                        onClick={() => setActiveTab('customers')}
+                        className="text-amber-600 hover:text-amber-700 font-bold hover:underline text-xs"
+                      >
+                        Assign Clients →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {rawSalesAgents.length === 0 && (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200">
+                    <span className="material-symbols-outlined text-4xl text-slate-300">support_agent</span>
+                    <h3 className="text-sm font-bold text-slate-700 mt-2">No Sales Agents Registered</h3>
+                    <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                      Click "+ Onboard Sales Agent" to create your first agent account for customer distribution.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -2026,6 +2527,88 @@ export default function AdminConsolePage() {
                   className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs shadow-md shadow-amber-500/20"
                 >
                   {isCreatingCoupon ? 'Creating...' : 'Activate Coupon'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. ONBOARD SALES AGENT MODAL */}
+      {showAddAgentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">person_add</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base font-montserrat">Onboard Sales Agent</h3>
+                  <p className="text-[11px] text-slate-400">Add an active agent eligible for automated client distribution</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddAgentModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAgent} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ramesh Patel"
+                  value={agentForm.name}
+                  onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:border-amber-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Work Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. ramesh.agent@specbee.com"
+                  value={agentForm.email}
+                  onChange={(e) => setAgentForm({ ...agentForm, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:border-amber-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Temporary Password *</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="••••••••••••"
+                  value={agentForm.password}
+                  onChange={(e) => setAgentForm({ ...agentForm, password: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:border-amber-500 outline-none"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Agent can use this to sign into the Agent Portal.</p>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddAgentModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreatingAgent}
+                  className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs shadow-md shadow-amber-500/20 disabled:opacity-60"
+                >
+                  {isCreatingAgent ? 'Onboarding...' : 'Onboard Agent'}
                 </button>
               </div>
             </form>

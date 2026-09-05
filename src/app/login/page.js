@@ -4,18 +4,44 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
-import { useLoginMutation } from '../../redux/services/api.js';
+import { useLoginMutation, useGoogleAuthMutation } from '../../redux/services/api.js';
 import { setCredentials } from '../../redux/slices/authSlice.js';
 import { showToast } from '../../redux/slices/cartSlice.js';
+import { signInWithGoogle } from '../../utils/firebase.js';
 
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [loginMutation, { isLoading }] = useLoginMutation();
+  const [googleAuthMutation, { isLoading: isGoogleLoading }] = useGoogleAuthMutation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const handleGoogleSignIn = async () => {
+    setErrorMsg('');
+    try {
+      const googleUser = await signInWithGoogle();
+      const res = await googleAuthMutation({
+        email: googleUser.email,
+        name: googleUser.name,
+        avatarUrl: googleUser.avatarUrl,
+        idToken: googleUser.idToken,
+      }).unwrap();
+
+      dispatch(setCredentials({ user: res.data.user, token: res.data.token }));
+      dispatch(showToast({ type: 'success', message: `Welcome to Center Shopping, ${res.data.user.name}!` }));
+      router.push('/');
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      if (err?.code !== 'auth/popup-closed-by-user') {
+        const msg = err?.data?.message || err?.message || 'Google sign-in failed. Please try again.';
+        setErrorMsg(msg);
+        dispatch(showToast({ type: 'error', message: msg }));
+      }
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,10 +66,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickLogin = (roleEmail) => {
-    setEmail(roleEmail);
-    setPassword('Password@123');
-  };
+
 
 
   return (
@@ -53,7 +76,12 @@ export default function LoginPage() {
         <div className="hidden lg:flex lg:col-span-5 bg-text-secondary text-white p-8 flex-col justify-between relative overflow-hidden">
           <div className="z-10 flex flex-col gap-3">
             <div className="flex items-center mb-2">
-              <img src="/logo.png" alt="Center Shopping Logo" className="h-20 w-auto max-h-20 object-contain" />
+              <img
+                src="/logo.png"
+                alt="Center Shopping Logo"
+                className="h-20 w-auto max-h-20 object-contain brightness-0 invert"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
             </div>
             <span className="font-label-caps text-[9px] uppercase tracking-widest text-primary-container font-bold mt-2">
               Center Shopping
@@ -106,19 +134,44 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Quick Demo Customer Helper */}
-            <div className="mb-6 p-3.5 rounded-xl bg-surface-subtle border border-hairline">
-              <span className="font-label-caps text-[9px] uppercase tracking-wider text-text-secondary font-bold block mb-2">
-                ⚡ Quick Demo Login:
-              </span>
+            {/* Google Sign In */}
+            <div className="mb-6">
               <button
                 type="button"
-                onClick={() => handleQuickLogin('customer@specbee.com')}
-                className="w-full px-3 py-2 rounded-lg bg-white border border-hairline hover:border-primary-container text-xs font-label-caps uppercase font-bold text-text-secondary shadow-2xs transition flex items-center justify-center gap-2 hover:bg-slate-50"
+                onClick={handleGoogleSignIn}
+                disabled={isGoogleLoading}
+                className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl font-medium text-xs text-slate-700 shadow-2xs hover:shadow-xs transition-all duration-200 disabled:opacity-60"
               >
-                <span className="material-symbols-outlined text-[16px] text-primary">person</span>
-                <span>Customer (John Doe)</span>
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span className="font-semibold text-slate-800">
+                  {isGoogleLoading ? 'Connecting to Google...' : 'Sign in with Google'}
+                </span>
               </button>
+
+              <div className="relative flex items-center justify-center my-5">
+                <div className="border-t border-slate-200 w-full"></div>
+                <span className="bg-white px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0">
+                  Or sign in with email
+                </span>
+                <div className="border-t border-slate-200 w-full"></div>
+              </div>
             </div>
 
 

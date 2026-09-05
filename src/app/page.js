@@ -819,7 +819,12 @@ export default function HomePage() {
             {/* Brand column */}
             <div className="col-span-12 lg:col-span-5 pr-0 lg:pr-8">
               <div className="flex items-center mb-4">
-                <img src="/logo.png" alt="Center Shopping Logo" className="h-16 w-auto max-h-16 object-contain" />
+                <img
+                  src="/logo.png"
+                  alt="Center Shopping Logo"
+                  className="h-14 sm:h-16 md:h-20 w-auto object-contain brightness-0 invert"
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
               </div>
               <p className="font-inter text-xs text-secondary-fixed-dim mb-6 max-w-md leading-relaxed">
                 Center Shopping - India's trusted online store for certified watches, fine jewellery, lifestyle accessories, and daily essentials with pan-India delivery.

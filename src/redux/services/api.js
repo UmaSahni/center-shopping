@@ -14,7 +14,7 @@ export const ecomApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Product', 'Cart', 'Order', 'Coupon', 'AdminStats'],
+  tagTypes: ['Product', 'Cart', 'Order', 'Coupon', 'AdminStats', 'AdminCustomers', 'AdminSalesAgents'],
   endpoints: (builder) => ({
     // Auth
     login: builder.mutation({
@@ -25,12 +25,21 @@ export const ecomApi = createApi({
       }),
       invalidatesTags: ['Cart', 'Order', 'AdminStats'],
     }),
+    googleAuth: builder.mutation({
+      query: (payload) => ({
+        url: '/auth/google',
+        method: 'POST',
+        body: payload,
+      }),
+      invalidatesTags: ['Cart', 'Order', 'AdminStats', 'AdminCustomers'],
+    }),
     register: builder.mutation({
       query: (userData) => ({
         url: '/auth/register',
         method: 'POST',
         body: userData,
       }),
+      invalidatesTags: ['AdminCustomers', 'AdminSalesAgents'],
     }),
     getProfile: builder.query({
       query: () => '/auth/profile',
@@ -56,6 +65,10 @@ export const ecomApi = createApi({
     getProductBySlug: builder.query({
       query: (slug) => `/products/slug/${slug}`,
       providesTags: (result, error, slug) => [{ type: 'Product', id: slug }],
+    }),
+    getProductById: builder.query({
+      query: (id) => `/products/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Product', id }],
     }),
     getCategories: builder.query({
       query: () => '/products/categories',
@@ -188,15 +201,41 @@ export const ecomApi = createApi({
       query: () => '/admin/stats',
       providesTags: ['AdminStats'],
     }),
+    getAdminCustomers: builder.query({
+      query: (search = '') => `/admin/customers${search ? `?search=${encodeURIComponent(search)}` : ''}`,
+      providesTags: ['AdminCustomers'],
+    }),
+    getAdminSalesAgents: builder.query({
+      query: () => '/admin/sales-agents',
+      providesTags: ['AdminSalesAgents'],
+    }),
+    assignCustomerAgent: builder.mutation({
+      query: ({ customerId, salesAgentId }) => ({
+        url: `/admin/customers/${customerId}/agent`,
+        method: 'PATCH',
+        body: { salesAgentId },
+      }),
+      invalidatesTags: ['AdminCustomers', 'AdminSalesAgents'],
+    }),
+    createSalesAgent: builder.mutation({
+      query: (agentData) => ({
+        url: '/admin/sales-agents',
+        method: 'POST',
+        body: agentData,
+      }),
+      invalidatesTags: ['AdminSalesAgents'],
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
+  useGoogleAuthMutation,
   useRegisterMutation,
   useGetProfileQuery,
   useGetProductsQuery,
   useGetProductBySlugQuery,
+  useGetProductByIdQuery,
   useGetCategoriesQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
@@ -215,4 +254,8 @@ export const {
   useUpdateOrderStatusMutation,
   useCancelOrderMutation,
   useGetAdminStatsQuery,
+  useGetAdminCustomersQuery,
+  useGetAdminSalesAgentsQuery,
+  useAssignCustomerAgentMutation,
+  useCreateSalesAgentMutation,
 } = ecomApi;

@@ -72,13 +72,13 @@ export default function Navbar() {
 
       {/* 2. MAIN HEADER BAR */}
       <header className="w-full bg-white shadow-[0_1px_8px_rgba(20,33,61,0.06)]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-3.5 flex items-center justify-between gap-6">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between gap-6">
           {/* Brand / Logo */}
-          <Link href="/" className="flex items-center group py-0.5">
+          <Link href="/" className="flex items-center shrink-0">
             <img
               src="/logo.png"
               alt="Center Shopping"
-              className="h-12 sm:h-14 w-auto max-h-14 object-contain transition-transform duration-200 group-hover:scale-105"
+              className="h-14 sm:h-16 md:h-20 w-auto object-contain"
             />
           </Link>
 
@@ -95,10 +95,6 @@ export default function Navbar() {
                   placeholder="Search for products, brands and more..."
                   className="w-full bg-transparent border-none text-slate-800 text-xs py-1.5 focus:outline-none placeholder:text-slate-400"
                 />
-                <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 bg-slate-200/60 rounded text-[10px] font-mono text-slate-500 font-semibold mr-1">
-                  <span>⌘</span>
-                  <span>K</span>
-                </div>
               </div>
             </form>
           </div>
