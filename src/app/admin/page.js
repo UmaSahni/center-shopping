@@ -532,35 +532,20 @@ export default function AdminConsolePage() {
           {/* Quick Staff Demonstration Credentials */}
           <div className="mb-5 p-3 rounded-xl bg-slate-900/40 border border-slate-700/60">
             <span className="font-label-caps text-[9px] uppercase tracking-wider text-slate-400 font-bold block mb-2">
-              ⚡ Quick Staff Demonstration Access:
+              ⚡ Quick Admin Demonstration Access:
             </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                disabled={isLoggingIn}
-                onClick={() => handleStaffLogin(null, 'admin@gmail.com', 'Password@123')}
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
-                  <span className="material-symbols-outlined text-xs">admin_panel_settings</span>
-                  <span>ADMIN</span>
-                </div>
-                <span className="text-[10px] text-slate-400 mt-0.5">Full control &amp; catalog</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isLoggingIn}
-                onClick={() => handleStaffLogin(null, 'agent@gmail.com', 'Password@123')}
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
-                  <span className="material-symbols-outlined text-xs">support_agent</span>
-                  <span>SALES AGENT</span>
-                </div>
-                <span className="text-[10px] text-slate-400 mt-0.5">Orders &amp; fulfillment</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              disabled={isLoggingIn}
+              onClick={() => handleStaffLogin(null, 'admin@gmail.com', 'Password@123')}
+              className="w-full p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/60 text-left transition flex items-center justify-between cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-400 text-sm">admin_panel_settings</span>
+                <span className="text-xs font-bold text-amber-400">ADMIN (Auto-fill)</span>
+              </div>
+              <span className="text-[10px] text-slate-400">admin@gmail.com • Password@123</span>
+            </button>
           </div>
 
           {/* Staff Login Form */}
